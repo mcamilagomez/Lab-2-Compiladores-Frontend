@@ -1,23 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grafo y Tablas con vis.js</title>
+    <title>RegexVisualizer</title>
     <link rel="stylesheet" href="styles.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
 </head>
 
 <body>
-    <h2>Grafo y Tablas</h2>
-    <input type="text" id="regexInput" placeholder="Ingrese expresión regular">
-    <button id="submitBtn">Enviar</button>
-    <div id="result"></div>
-    <div id="network"></div>
-    <div id="tables"></div>
+
+    <div id="regexInputContainer">
+        <h2>RegexVisualizer</h2>
+        <input type="text" id="regexInput" placeholder="Enter regular expression...">
+        <button id="submitBtn">Send</button>
+    </div>
+
+
+    <div id="container-graph-table">
+        <div class="graph-container">
+            <h3>Thompson Graph</h3>
+            <div id="network-thompson"></div>
+        </div>
+        <div class="table-container">
+            <h3>Transition Table</h3>
+            <div id="thompson-table"></div>
+        </div>
+    </div>
+
+    <div id="container-graph-table">
+        <div class="graph-container">
+            <h3>AFD no opt</h3>
+            <div id="XX"></div>
+        </div>
+        <div class="table-container">
+            <div id='afdnop-table'></div>
+        </div>
+    </div>
+
+    <!-- PARA EL OPTIMO -->
+    <div id="container-graph-table">
+        <div class="graph-container">
+            <h3>AFD opt</h3>
+            <div id="XX"></div>
+        </div>
+        <div class="table-container">
+            <div id='XX'></div>
+        </div>
+    </div>
 
     <script src="scripts.js"></script>
 </body>
-</html>
 
+</html>
