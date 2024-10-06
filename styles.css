@@ -16,6 +16,8 @@ h3 {
     text-align: center;
 }
 
+
+
 #regexInputContainer {
     text-align: center;
     margin-bottom: 20px;
@@ -27,30 +29,54 @@ h3 {
     width: 300px;
     border-radius: 6px;
     margin-right: 5px;
+    border: 1px solid #ced4da;
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transición suave */
+    
+}
+
+#regexInputContainer {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#regexInput {
+    font-family: 'Poppins', sans-serif;
+    padding: 10px;
+    width: 300px;
+    border-radius: 6px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
 }
 
 #submitBtn {
-    padding: 10px 20px;
-    cursor: pointer;
-    background-color: #2a7a97;
-    color: white;
     border: none;
-    border-radius: 5px;
-    font-family: 'Poppins', sans-serif;
+    padding: 4px 5px 4px 5px;
+    cursor: pointer;
+    border-radius: 6px;
+    color: white;
+    transition: background-color 0.3s ease;
 }
 
 #submitBtn:hover {
-    background-color: #86a6b2;
+    background-color: #245d75;
 }
 
-#simbolos {
-    margin: 0 auto 10px auto;
+#submitBtn svg {
+    width: 20px;
+    height: 20px;
+    stroke:  #668fa1;
+}
+
+
+.simbolos {
+    margin: 0 auto 0px auto;
     border-radius: 8px;  
     max-width: 400px;  
     
 }
 
-#simbolos h3 {
+.simbolos h3 {
     font-family: 'Poppins', sans-serif;  
     font-size: 15px;
     color: black;  
@@ -58,7 +84,7 @@ h3 {
     margin: 0;
 }
 
-#simbolos p {
+.simbolos p {
     font-family: 'Courier New', monospace;  
     font-size: 1rem; 
     color: #313030;  
@@ -91,6 +117,53 @@ h3 {
     max-width: 500px;  /* Ancho máximo para la sección del grafo */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
+
+#cadena {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transición suave */
+}
+
+#cadena::placeholder {
+    color: #6c757d; /* Placeholder de color suave */
+}
+
+.container-cadena {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%; 
+    padding: 10px;
+    max-width: 900px;  /* Ancho máximo reducido para hacer los contenedores más pequeños */
+    margin-left: auto;
+    margin-right: auto;  /* Centramos el contenedor */
+}
+
+.container-cadena input[type="text"] {
+    font-family: 'Poppins','sans-serif';
+    font-size: 12px;
+    width: 100%; /* Que ocupe todo el ancho disponible dentro del contenedor */
+    max-width: 500px; /* Ancho máximo del input */
+    margin-right: 10px; /* Margen inferior para separar del botón */
+}
+
+.container-cadena button {
+    padding: 8px 15px;
+    background-color: #2a7a97;
+    font-family: 'Poppins','sans-serif';
+    color: white;
+    border: none;
+    font-size: 12px ;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.container-cadena button:hover {
+    background-color: #86a6b2;
+}
+
 
 /* Estilo del contenedor de la tabla */
 .table-container {
@@ -138,4 +211,82 @@ h3 {
 
 .hidden {
     display: none;
+}
+/* Estilo para el contenedor del recorrido */
+.recorrido-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.recorrido-title {
+    font-size: 1.5em;
+    color: #333;
+    text-align: center;
+}
+
+.transicion {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease-in-out;
+}
+
+.transicion:hover {
+    background-color: #d1f5d3;
+}
+
+.node {
+    font-weight: bold;
+    color: #333;
+    margin: 0 10px;
+}
+
+.chart {
+    font-size: 1.2em;
+    color: #007BFF;
+    margin: 0 10px;
+}
+
+/* Estilo para el resultado */
+.resultado {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.resultado-valido {
+    background-color: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+}
+
+.resultado-invalido {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 2px solid #f5c6cb;
+}
+
+.valido, .invalido {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+/* Animación */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

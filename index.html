@@ -15,18 +15,35 @@
     <div id="regexInputContainer">
         <h2>RegexVisualizer</h2>
         <input type="text" id="regexInput" placeholder="Enter regular expression...">
-        <button id="submitBtn">Send</button>
+        <button id="submitBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                <path fill-rule="evenodd"
+                    d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 10.28a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 1 0-1.06 1.06l1.72 1.72H8.25a.75.75 0 0 0 0 1.5h5.69l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3Z"
+                    clip-rule="evenodd" />
+            </svg>
+
+        </button>
     </div>
 
 
-    <div id="simbolos"></div>
+    <div class="container-cadena hidden">
+        <input type="text" id="cadena" placeholder="Enter a string to test with the automaton...">
+        <button id="submitButton">Validate</button>
+    </div>
+
+
+
+    <div id="resultado"></div>
+
 
     <div class="container-graph-table hidden">
         <div class="graph-container">
             <h3>Thompson Graph</h3>
             <div id="network-thompson"></div>
+
         </div>
         <div class="table-container">
+            <div class="simbolos"></div>
             <div id="thompson-table"></div>
         </div>
     </div>
@@ -35,8 +52,10 @@
         <div class="graph-container">
             <h3>AFD no opt</h3>
             <div id="network-afdnop"></div>
+
         </div>
         <div class="table-container">
+            <div class="simbolos"></div>
             <div id="afdnop-table"></div>
         </div>
     </div>
@@ -45,8 +64,10 @@
         <div class="graph-container">
             <h3>AFD opt</h3>
             <div id="network-afdopt"></div>
+
         </div>
         <div class="table-container">
+            <div class="simbolos"></div>
             <div id="afdopt-table"></div>
             <div id="identical-states"></div>
         </div>
