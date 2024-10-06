@@ -80,6 +80,7 @@ h3 {
 .table-container table {
     width: 100%;
     border-collapse: collapse;
+    border: 1px solid black;
 }
 
 .table-container th, .table-container td {
@@ -90,4 +91,10 @@ h3 {
 
 .table-container th {
     background-color: #f2f2f2;
+}
+
+#afdopt-table table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid red; /* Borde temporal para verificar visibilidad */
 }
