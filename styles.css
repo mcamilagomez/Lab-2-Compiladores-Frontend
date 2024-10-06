@@ -5,6 +5,7 @@ body {
     background-color: #f4f4f4;
 }
 
+
 h2 {
     color: #333;
     margin-bottom: 10px;
@@ -42,24 +43,53 @@ h3 {
     background-color: #86a6b2;
 }
 
-#container-graph-table {
+#simbolos {
+    margin: 0 auto 10px auto;
+    border-radius: 8px;  
+    max-width: 400px;  
+    
+}
+
+#simbolos h3 {
+    font-family: 'Poppins', sans-serif;  
+    font-size: 15px;
+    color: black;  
+    text-align: center; 
+    margin: 0;
+}
+
+#simbolos p {
+    font-family: 'Courier New', monospace;  
+    font-size: 1rem; 
+    color: #313030;  
+    background-color: #fff;  
+    padding: 10px;  
+    border: 1px solid #ccc;  
+    border-radius: 5px;  
+    text-align: center;  
+}
+
+/* Estilos para el contenedor principal */
+.container-graph-table {
     display: flex;
     justify-content: center;
     flex-direction: row;
     gap: 20px;
     margin-bottom: 20px;
-    background-color: white;
     padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 900px;  /* Ancho máximo reducido para hacer los contenedores más pequeños */
+    margin-left: auto;
+    margin-right: auto;  /* Centramos el contenedor */
 }
 
-/* El grafo ocupa el 50% del espacio */
+/* El grafo ocupa menos espacio */
 .graph-container {
     flex: 1;
     background-color: white;
     padding: 15px;
     border-radius: 10px;
+    max-width: 500px;  /* Ancho máximo para la sección del grafo */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Estilo del contenedor de la tabla */
@@ -67,14 +97,12 @@ h3 {
     flex: 1;
     padding: 15px;
     border-radius: 10px;
-    background-color: white;
+    background-color: rgb(255, 255, 255);
+    max-width: 500px;  /* Ancho máximo para la sección de la tabla */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilos para el grafo de Thompson */
-#network-thompson {
-    width: 100%;
-    height: 400px;
-}
+
 
 /* Estilos para la tabla */
 .table-container table {
@@ -93,8 +121,21 @@ h3 {
     background-color: #f2f2f2;
 }
 
+/* Estilos para el grafo del AFD no óptimo y óptimo */
+#network-afdnop, #network-afdopt, #network-thompson{
+    width: 100%;
+    height: 500px;  
+    background-color: #e7eced;
+    border-radius: 10px;
+}
+
+
 #afdopt-table table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid red; /* Borde temporal para verificar visibilidad */
+}
+
+
+.hidden {
+    display: none;
 }
