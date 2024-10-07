@@ -3,8 +3,8 @@ let regexInput = "";
 let afdNopGraph, afdOptGraph; // Variables globales para los grafos
 
 document.getElementById("submitBtn").addEventListener("click", function () {
-  //---------------------------------
-  regexInput = document.getElementById("regexInput").value; // Guardamos el valor de la expresión regular
+  // Guardamos el valor de la expresión regular ingresada
+  regexInput = document.getElementById("regexInput").value;
   resetForm();
 
   // Llamamos a la API 1 para obtener el grafo según la expresión regular ingresada
@@ -56,47 +56,51 @@ document.getElementById("submitBtn").addEventListener("click", function () {
         confirmButtonColor: "gray",
         customClass: {
           popup: "smaller-swal-popup", // Clase personalizada para el popup
+          confirmButton: "custom-swal-button", // Clase personalizada para el botón
         },
       });
     });
 });
 
-// Llamada a las APIs para el AFD No Óptimo y AFD Óptimo --------------------------------------
+// Llamada a las APIs para el AFD No Óptimo y AFD Óptimo
 document.getElementById("submitButton").addEventListener("click", function () {
   const inputCadena = document.getElementById("cadena").value;
 
-  // Crear una expresión regular a partir de la entrada
-  const regex = new RegExp(regexInput); // `regexInput` es la expresión regular introducida
+  // Crear una expresión regular a partir del valor de regexInput
+  const regex = new RegExp(regexInput); // `regexInput` es la expresión regular introducida en la API 1
 
-  console.log("vacio" + inputCadena);
   // Verificar si la cadena vacía es aceptada por la expresión regular
   if (inputCadena === "" && regex.test("")) {
-    mostrarResultadoCadenaVacia();
+    mostrarResultadoCadenaVacia(); // Si es vacía y válida según la regex
     return;
   } else if (inputCadena === "" && !regex.test("")) {
-    mostrarResultadoCadenaInvalida();
+    mostrarResultadoCadenaInvalida(); // Si es vacía pero no válida
     return;
   }
 
-  // AFD No Óptimo
+  // Ejecutar primero la solicitud para el AFD No Óptimo y luego la del AFD Óptimo
   fetch(`http://localhost:3600/api2/${regexInput}/nop/${inputCadena}`)
     .then((response) => response.json())
     .then((dataNop) => {
+      // Procesar los datos del AFD No Óptimo
       currentTransitionsNop = dataNop.transitions;
       construirMapeo(afdNopGraph, nodeIdMapNop);
       mostrarRecorrido(dataNop, "AFD No Óptimo");
-    })
-    .catch((error) => console.error("Error en AFD No Óptimo:", error));
 
-  // AFD Óptimo
-  fetch(`http://localhost:3600/api2/${regexInput}/op/${inputCadena}`)
+      return fetch(
+        `http://localhost:3600/api2/${regexInput}/op/${inputCadena}`
+      );
+    })
     .then((response) => response.json())
     .then((dataOpt) => {
+      // Procesar los datos del AFD Óptimo
       currentTransitionsOpt = dataOpt.transitions;
       construirMapeo(afdOptGraph, nodeIdMapOpt);
       mostrarRecorrido(dataOpt, "AFD Óptimo");
     })
-    .catch((error) => console.error("Error en AFD Óptimo:", error));
+    .catch((error) => {
+      console.error("Error al procesar las solicitudes:", error);
+    });
 });
 
 // Crear un objeto de mapeo dinámico para cada grafo

@@ -354,3 +354,8 @@ input {
   display: inline-block;
   transition: all 0.3s ease-in-out;
 }
+
+/* Estilo personalizado para el botón de confirmación de SweetAlert */
+.custom-swal-button {
+  font-family: "Poppins", sans-serif;
+}
