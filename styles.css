@@ -243,6 +243,10 @@ button:disabled, .disabled-button {
   cursor: not-allowed; 
 } 
 
+.disabled-button:hover{
+  background-color: #b0b0b0;
+  box-shadow: none;
+}
 .transition-container {
   display: flex;
   align-items: center;

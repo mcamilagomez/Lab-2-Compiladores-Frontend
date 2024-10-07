@@ -3,8 +3,9 @@ let regexInput = "";
 let afdNopGraph, afdOptGraph; // Variables globales para los grafos
 
 document.getElementById("submitBtn").addEventListener("click", function () {
+  //---------------------------------
   regexInput = document.getElementById("regexInput").value; // Guardamos el valor de la expresión regular
-  resetForm()
+  resetForm();
 
   // Llamamos a la API 1 para obtener el grafo según la expresión regular ingresada
   fetch(`http://localhost:3600/api1/${regexInput}`)
@@ -16,7 +17,7 @@ document.getElementById("submitBtn").addEventListener("click", function () {
     })
     .then((data) => {
       // Graficar y mostrar datos solo después de que los datos se hayan cargado
-      graficarGrafo(data); // Graficar Thompson
+      graficarThompson(data); // Graficar Thompson
       graficarAFDNop(data); // Graficar AFD no óptimo
       graficarAFDOpt(data); // Graficar AFD óptimo
       TableThompson(data); // Mostrar tabla de Thompson
@@ -40,8 +41,6 @@ document.getElementById("submitBtn").addEventListener("click", function () {
         });
     })
     .catch((error) => {
-      console.error("Error:", error.message || error);
-
       Swal.fire({
         icon: "error",
         title: "Error al cargar datos",
@@ -60,6 +59,44 @@ document.getElementById("submitBtn").addEventListener("click", function () {
         },
       });
     });
+});
+
+// Llamada a las APIs para el AFD No Óptimo y AFD Óptimo --------------------------------------
+document.getElementById("submitButton").addEventListener("click", function () {
+  const inputCadena = document.getElementById("cadena").value;
+
+  // Crear una expresión regular a partir de la entrada
+  const regex = new RegExp(regexInput); // `regexInput` es la expresión regular introducida
+
+  console.log("vacio" + inputCadena);
+  // Verificar si la cadena vacía es aceptada por la expresión regular
+  if (inputCadena === "" && regex.test("")) {
+    mostrarResultadoCadenaVacia();
+    return;
+  } else if (inputCadena === "" && !regex.test("")) {
+    mostrarResultadoCadenaInvalida();
+    return;
+  }
+
+  // AFD No Óptimo
+  fetch(`http://localhost:3600/api2/${regexInput}/nop/${inputCadena}`)
+    .then((response) => response.json())
+    .then((dataNop) => {
+      currentTransitionsNop = dataNop.transitions;
+      construirMapeo(afdNopGraph, nodeIdMapNop);
+      mostrarRecorrido(dataNop, "AFD No Óptimo");
+    })
+    .catch((error) => console.error("Error en AFD No Óptimo:", error));
+
+  // AFD Óptimo
+  fetch(`http://localhost:3600/api2/${regexInput}/op/${inputCadena}`)
+    .then((response) => response.json())
+    .then((dataOpt) => {
+      currentTransitionsOpt = dataOpt.transitions;
+      construirMapeo(afdOptGraph, nodeIdMapOpt);
+      mostrarRecorrido(dataOpt, "AFD Óptimo");
+    })
+    .catch((error) => console.error("Error en AFD Óptimo:", error));
 });
 
 // Crear un objeto de mapeo dinámico para cada grafo
@@ -83,44 +120,43 @@ function construirMapeo(graph, map) {
   nodos.forEach((nodo) => {
     map[nodo.label.trim()] = nodo.id;
   });
-  console.log("Mapa de etiquetas a IDs:", map);
 }
 
 // Función para resaltar un nodo en el grafo y mantener el color original después de cierto tiempo
-function highlightNode(graph, map, nodeId, duration) { 
+function highlightNode(graph, map, nodeId, duration) {
   const mappedId = map[nodeId.trim()];
   if (!mappedId) {
-    console.warn(`Node not found in the map: ${nodeId}`);
     return;
   }
 
   const node = graph.body.data.nodes.get(mappedId);
   if (node) {
     const originalColor = { background: "#89CFF0", border: "#5DADE2" };
-    graph.body.data.nodes.update({ id: mappedId, color: { background: "gray", border: "gray" } });
+    graph.body.data.nodes.update({
+      id: mappedId,
+      color: { background: "gray", border: "gray" },
+    });
     setTimeout(() => {
       graph.body.data.nodes.update({ id: mappedId, color: originalColor });
     }, duration);
-  } else {
-    console.warn(`Node not found in the graph: ${nodeId}`);
   }
 }
 
 // Función para resaltar una arista en el grafo y mantener el color original después de cierto tiempo
-function highlightEdge(graph, map, fromId, toId, duration) { 
+function highlightEdge(graph, map, fromId, toId, duration) {
   const mappedFromId = map[fromId.trim()];
   const mappedToId = map[toId.trim()];
   const edges = graph.body.data.edges.get();
-  const edge = edges.find((e) => e.from === mappedFromId && e.to === mappedToId);
+  const edge = edges.find(
+    (e) => e.from === mappedFromId && e.to === mappedToId
+  );
 
   if (edge) {
-    const originalColor = edge.color || { color: '#5DADE2' };
+    const originalColor = edge.color || { color: "#5DADE2" };
     graph.body.data.edges.update({ id: edge.id, color: { color: "gray" } });
     setTimeout(() => {
       graph.body.data.edges.update({ id: edge.id, color: originalColor });
     }, duration);
-  } else {
-    console.warn(`Edge not found from ${fromId} (${mappedFromId}) to ${toId} (${mappedToId})`);
   }
 }
 
@@ -131,7 +167,13 @@ function automaticTraversalNop() {
 
     highlightNode(afdNopGraph, nodeIdMapNop, transition.node1, 1000);
     setTimeout(() => {
-      highlightEdge(afdNopGraph, nodeIdMapNop, transition.node1, transition.node2, 1000);
+      highlightEdge(
+        afdNopGraph,
+        nodeIdMapNop,
+        transition.node1,
+        transition.node2,
+        1000
+      );
     }, 1000);
     setTimeout(() => {
       highlightNode(afdNopGraph, nodeIdMapNop, transition.node2, 1000);
@@ -139,8 +181,6 @@ function automaticTraversalNop() {
     }, 2000);
   } else {
     clearInterval(traversalIntervalNop);
-    document.getElementById("repeatButtonNop").style.display = "inline";
-    console.log("Recorrido en AFD No Óptimo completado.");
   }
 }
 
@@ -151,7 +191,13 @@ function automaticTraversalOpt() {
 
     highlightNode(afdOptGraph, nodeIdMapOpt, transition.node1, 1000);
     setTimeout(() => {
-      highlightEdge(afdOptGraph, nodeIdMapOpt, transition.node1, transition.node2, 1000);
+      highlightEdge(
+        afdOptGraph,
+        nodeIdMapOpt,
+        transition.node1,
+        transition.node2,
+        1000
+      );
     }, 1000);
     setTimeout(() => {
       highlightNode(afdOptGraph, nodeIdMapOpt, transition.node2, 1000);
@@ -159,98 +205,158 @@ function automaticTraversalOpt() {
     }, 2000);
   } else {
     clearInterval(traversalIntervalOpt);
-    document.getElementById("repeatButtonOpt").style.display = "inline";
-    console.log("Recorrido en AFD Óptimo completado.");
   }
 }
 
 // Función para iniciar el recorrido automático en AFD No Óptimo
 function startTraversalNop() {
+  clearInterval(traversalIntervalNop);
   currentIndexNop = 0;
-  traversalIntervalNop = setInterval(automaticTraversalNop, 3000);  // Cada 3 segundos avanzamos
-  document.getElementById("repeatButtonNop").style.display = "none";
+  traversalIntervalNop = setInterval(automaticTraversalNop, 3000); // Cada 3 segundos avanzamos
 }
 
 // Función para iniciar el recorrido automático en AFD Óptimo
 function startTraversalOpt() {
-  currentIndexOpt = 0;
-  traversalIntervalOpt = setInterval(automaticTraversalOpt, 3000);
-  document.getElementById("repeatButtonOpt").style.display = "none";
-}
-
-// Función para reiniciar el recorrido en AFD No Óptimo
-function resetTraversalNop() {
-  clearInterval(traversalIntervalNop);
-  currentIndexNop = 0;
-  startTraversalNop();
-}
-
-// Función para reiniciar el recorrido en AFD Óptimo
-function resetTraversalOpt() {
   clearInterval(traversalIntervalOpt);
   currentIndexOpt = 0;
-  startTraversalOpt();
+  traversalIntervalOpt = setInterval(automaticTraversalOpt, 3000);
 }
 
 // Asociar el botón "Start Traversal" al AFD No Óptimo
-document.getElementById("startButtonNop").addEventListener("click", function() {
-  startTraversalNop();
-});
+document
+  .getElementById("startButtonNop")
+  .addEventListener("click", function () {
+    const inputCadena = document.getElementById("cadena").value;
+    const regex = new RegExp(regexInput);
 
-// Asociar el botón "Repeat Traversal" al AFD No Óptimo
-document.getElementById("repeatButtonNop").addEventListener("click", function() {
-  resetTraversalNop();
-});
+    // Verificar si la cadena vacía es aceptada por la expresión regular
+    if (inputCadena === "" && regex.test("")) {
+      resaltarPrimerNodo(afdNopGraph, nodeIdMapNop);
+      return;
+    } else {
+      startTraversalNop(); // Iniciar el recorrido normal
+    }
+  });
 
 // Asociar el botón "Start Traversal" al AFD Óptimo
-document.getElementById("startButtonOpt").addEventListener("click", function() {
-  startTraversalOpt();
-});
+document
+  .getElementById("startButtonOpt")
+  .addEventListener("click", function () {
+    const inputCadena = document.getElementById("cadena").value; // Obtener el valor de la cadena
+    const regex = new RegExp(regexInput); // Crear la expresión regular a partir de la entrada
 
-// Asociar el botón "Repeat Traversal" al AFD Óptimo
-document.getElementById("repeatButtonOpt").addEventListener("click", function() {
-  resetTraversalOpt();
-});
+    // Verificar si la cadena vacía es aceptada por la expresión regular
+    if (inputCadena === "" && regex.test("")) {
+      resaltarPrimerNodo(afdOptGraph, nodeIdMapOpt); // Resaltar el primer nodo en AFD Óptimo
 
-// Llamada a las APIs para el AFD No Óptimo y AFD Óptimo
-document.getElementById("submitButton").addEventListener("click", function () {
-  const inputCadena = document.getElementById("cadena").value;
-  clearInterval(traversalIntervalOpt);
-  clearInterval(traversalIntervalNop);
+      return;
+    } else {
+      startTraversalOpt();
+    }
+  });
 
-  // AFD No Óptimo
-  fetch(`http://localhost:3600/api2/${regexInput}/nop/${inputCadena}`)
-    .then((response) => response.json())
-    .then((dataNop) => {
-      currentTransitionsNop = dataNop.transitions;
-      construirMapeo(afdNopGraph, nodeIdMapNop);
-      mostrarRecorrido(dataNop, "AFD No Óptimo");
-    })
-    .catch((error) => console.error("Error en AFD No Óptimo:", error));
+// Función para mostrar el resultado si la cadena vacía es aceptada
+function mostrarResultadoCadenaVacia() {
+  let inputField = document.getElementById("cadena");
+  recorridoDivOpt = document.getElementById("recorridoOpt");
+  recorridoDivNop = document.getElementById("recorridoNop");
 
-  // AFD Óptimo
-  fetch(`http://localhost:3600/api2/${regexInput}/op/${inputCadena}`)
-    .then((response) => response.json())
-    .then((dataOpt) => {
-      currentTransitionsOpt = dataOpt.transitions;
-      construirMapeo(afdOptGraph, nodeIdMapOpt);
-      mostrarRecorrido(dataOpt,"AFD Óptimo" );
-    })
-    .catch((error) => console.error("Error en AFD Óptimo:", error));
-});
+  // Mostrar directamente que la expresión vacía es aceptada
+  document.getElementById(
+    "resultadoNop"
+  ).innerHTML = `<p class="result-text"><span class="accepted">Regular expression accepted (empty string)</span></p>`;
+  document.getElementById(
+    "resultadoOpt"
+  ).innerHTML = `<p class="result-text"><span class="accepted">Regular expression accepted (empty string)</span></p>`;
 
+  // Cambiar el color del input a verde (valid-input)
+  inputField.classList.remove("invalid-input");
+  inputField.classList.add("valid-input");
+
+  // Asegurarse de que los contenedores estén visibles si estaban ocultos
+  document.getElementById("resultadoNop").classList.remove("hidden");
+  document.getElementById("resultadoOpt").classList.remove("hidden");
+  recorridoDivOpt.classList.add("hidden");
+  recorridoDivNop.classList.add("hidden");
+}
+
+// Función para resaltar un nodo directamente por su ID en el grafo sin afectar las aristas
+function highlightNodeById(graph, nodeId, duration) {
+  const node = graph.body.data.nodes.get(nodeId); // Obtener el nodo directamente por su ID
+
+  if (node) {
+    const originalNodeColor = { background: "#89CFF0", border: "#5DADE2" }; // Colores originales del nodo
+
+    // Actualizar el color del nodo a gris (sin afectar las aristas)
+    graph.body.data.nodes.update({
+      id: nodeId,
+      color: { background: "gray", border: "gray" }, // Cambia solo el color del nodo
+    });
+
+    // Restaurar el color original del nodo después de `duration` milisegundos
+    setTimeout(() => {
+      graph.body.data.nodes.update({ id: nodeId, color: originalNodeColor }); // Restaurar color del nodo
+    }, duration);
+  }
+}
+
+// Función para resaltar el primer nodo (sin cambiar el color de la arista)
+function resaltarPrimerNodo(graph) {
+  // Buscar la arista que tiene la etiqueta 'start' y el nodo de destino
+  const edges = graph.body.data.edges.get();
+  const startEdge = edges.find((edge) => edge.label === "start"); // Buscar arista con etiqueta 'start'
+
+  if (startEdge) {
+    const startNodeId = startEdge.to; // Obtener el ID del nodo destino
+    if (startNodeId) {
+      highlightNodeById(graph, startNodeId, 2000); // Resaltar solo el nodo por 2 segundos
+    }
+  }
+}
+
+// Función para mostrar el resultado si la cadena vacía no es aceptada
+function mostrarResultadoCadenaInvalida() {
+  let inputField = document.getElementById("cadena");
+  let startButtonNop = document.getElementById("startButtonNop");
+  let startButtonOpt = document.getElementById("startButtonOpt");
+  recorridoDivOpt = document.getElementById("recorridoOpt");
+  recorridoDivNop = document.getElementById("recorridoNop");
+
+  // Mostrar directamente que la expresión vacía es rechazada
+  document.getElementById(
+    "resultadoNop"
+  ).innerHTML = `<p class="result-text"><span class="rejected">Regular expression rejected (empty string)</span></p>`;
+  document.getElementById(
+    "resultadoOpt"
+  ).innerHTML = `<p class="result-text"><span class="rejected">Regular expression rejected (empty string)</span></p>`;
+
+  // Cambiar el color del input a rojo (invalid-input)
+  inputField.classList.remove("valid-input");
+  inputField.classList.add("invalid-input");
+
+  // Asegurarse de que los contenedores estén visibles si estaban ocultos
+  document.getElementById("resultadoNop").classList.remove("hidden");
+  document.getElementById("resultadoOpt").classList.remove("hidden");
+
+  // Deshabilitar los botones de Start si la cadena es rechazada
+  startButtonNop.disabled = true;
+  startButtonOpt.disabled = true;
+  startButtonNop.classList.add("disabled-button");
+  startButtonOpt.classList.add("disabled-button");
+  recorridoDivOpt.classList.add("hidden");
+  recorridoDivNop.classList.add("hidden");
+}
 
 // Función para mostrar el recorrido en el DOM y cambiar el color del input
 function mostrarRecorrido(data, afdType) {
   let recorridoDiv = "";
   let resultadoDiv = "";
   let inputField = document.getElementById("cadena"); // Input donde ingresas la cadena
- 
+
   let startButtonNop = document.getElementById("startButtonNop");
   let startButtonOpt = document.getElementById("startButtonOpt");
   let repeatButtonNop = document.getElementById("repeatButtonNop");
   let repeatButtonOpt = document.getElementById("repeatButtonOpt");
-  
 
   // Asignar los elementos de acuerdo al tipo de AFD
   if (afdType === "AFD No Óptimo") {
@@ -263,13 +369,12 @@ function mostrarRecorrido(data, afdType) {
 
   // Verificar si los divs existen antes de continuar
   if (!recorridoDiv || !resultadoDiv) {
-    console.error("Error: Los contenedores para mostrar el recorrido o el resultado no existen.");
     return; // Detenemos la ejecución si no existen los elementos
   }
-  
+
   // Asegurarse de que los contenedores estén visibles si estaban ocultos
-  recorridoDiv.classList.remove('hidden');
-  resultadoDiv.classList.remove('hidden');
+  recorridoDiv.classList.remove("hidden");
+  resultadoDiv.classList.remove("hidden");
 
   const transitions = data.transitions;
   let recorridoText = "";
@@ -288,11 +393,15 @@ function mostrarRecorrido(data, afdType) {
 
   // Mostrar el recorrido con animación
   recorridoDiv.innerHTML = `<div class="recorrido-container">${recorridoText}</div>`;
-  
+
   // Mostrar el resultado de aceptación o rechazo
   resultadoDiv.innerHTML = `<p class="result-text">
           <span class="${data.sussefull ? "accepted" : "rejected"}">
-          ${data.sussefull ? "Regular expression accepted" : "Regular expression rejected"}
+          ${
+            data.sussefull
+              ? "Regular expression accepted"
+              : "Regular expression rejected"
+          }
           </span></p>`;
 
   // Cambiar el color del input según si la expresión regular fue aceptada o rechazada
@@ -300,19 +409,15 @@ function mostrarRecorrido(data, afdType) {
     inputField.classList.remove("invalid-input");
     inputField.classList.add("valid-input");
 
-  
     // Habilitar los botones de Start si la cadena es aceptada
     startButtonNop.disabled = false;
     startButtonOpt.disabled = false;
     startButtonNop.classList.remove("disabled-button");
     startButtonOpt.classList.remove("disabled-button");
-    
-
   } else {
     inputField.classList.remove("valid-input");
     inputField.classList.add("invalid-input");
 
-    
     // Deshabilitar los botones de Start si la cadena es rechazada
     startButtonNop.disabled = true;
     startButtonOpt.disabled = true;
@@ -320,10 +425,19 @@ function mostrarRecorrido(data, afdType) {
     startButtonOpt.classList.add("disabled-button");
     repeatButtonNop.style.display = "none";
     repeatButtonOpt.style.display = "none";
-    
   }
 }
 
+// Detectar cuando se borra la cadena y resetear el estilo
+document.getElementById("cadena").addEventListener("input", function () {
+  const inputField = document.getElementById("cadena");
+
+  // Si el campo está vacío, eliminar los estilos de validación
+  if (inputField.value === "") {
+    inputField.classList.remove("valid-input");
+    inputField.classList.remove("invalid-input");
+  }
+});
 
 // Función para resetear el campo de texto y los resultados
 function resetForm() {
@@ -332,6 +446,8 @@ function resetForm() {
   let recorridoOpt = document.getElementById("recorridoOpt"); // Div del recorrido AFD Óptimo
   let resultadoNop = document.getElementById("resultadoNop"); // Div del resultado AFD No Óptimo
   let resultadoOpt = document.getElementById("resultadoOpt"); // Div del resultado AFD Óptimo
+  let startButtonNop = document.getElementById("startButtonNop");
+  let startButtonOpt = document.getElementById("startButtonOpt");
 
   // Limpiar el campo de texto
   inputField.value = "";
@@ -345,13 +461,26 @@ function resetForm() {
   resultadoNop.innerHTML = "";
   recorridoOpt.innerHTML = "";
   resultadoOpt.innerHTML = "";
+
+  // Resetear los índices de los recorridos
+  currentIndexNop = 0;
+  currentIndexOpt = 0;
+
+  // Detener cualquier intervalo en ejecución (por seguridad)
+  clearInterval(traversalIntervalNop);
+  clearInterval(traversalIntervalOpt);
+
+  // Habilitar los botones de Start
+  startButtonNop.disabled = false;
+  startButtonOpt.disabled = false;
+  startButtonNop.classList.remove("disabled-button");
+  startButtonOpt.classList.remove("disabled-button");
 }
 
 // Añadir evento para el botón de reset
 document.getElementById("resetButton").addEventListener("click", function () {
   resetForm();
 });
-
 
 function mostrarSimbolos(regex) {
   // Crear un Set para almacenar los símbolos únicos
@@ -378,7 +507,7 @@ function mostrarSimbolos(regex) {
   });
 }
 
-function graficarGrafo(data) {
+function graficarThompson(data) {
   const nodes = new vis.DataSet();
   const edges = new vis.DataSet();
 
@@ -404,8 +533,6 @@ function graficarGrafo(data) {
 
     nodes.add(nodeOptions);
   });
-
-
 
   // Añadir aristas
   data.graph.nodes.forEach((node) => {
@@ -441,7 +568,7 @@ function graficarGrafo(data) {
       label: "start",
       arrows: "to", // Flecha apuntando al nodo inicial
       color: {
-        color: "#5DADE2",// Color de la flecha
+        color: "#5DADE2", // Color de la flecha
         opacity: 1,
       },
     });
@@ -458,7 +585,7 @@ function graficarGrafo(data) {
     nodes: {
       shape: "circle",
       size: 20,
-      color: {background: '#89CFF0', border: '#5DADE2'},
+      color: { background: "#89CFF0", border: "#5DADE2" },
       font: {
         size: 30,
       },
@@ -762,7 +889,12 @@ function graficarAFDOpt(data) {
   const networkData = { nodes: nodes, edges: edges };
 
   const options = {
-    nodes: { shape: "circle", size: 20, font: { size: 30 } },
+    nodes: {
+      shape: "circle",
+      size: 20,
+      color: { background: "#89CFF0", border: "#5DADE2" },
+      font: { size: 30 },
+    },
     edges: { arrows: { to: { enabled: true } }, length: 200 },
     physics: { enabled: true },
   };
@@ -863,6 +995,7 @@ function graficarAFDNop(data) {
     nodes: {
       shape: "circle",
       size: 20,
+      color: { background: "#89CFF0", border: "#5DADE2" },
       font: {
         size: 30,
       },
@@ -900,12 +1033,6 @@ function mostrarIdenticos(data) {
     identicalDiv.innerHTML = `<h3>No identical states found.</h3>`;
   }
 }
-
-
-
-
-
-
 
 /*
 // Función para avanzar el recorrido de AFD No Óptimo
