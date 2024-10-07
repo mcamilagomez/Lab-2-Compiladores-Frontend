@@ -4,7 +4,8 @@ let afdNopGraph, afdOptGraph; // Variables globales para los grafos
 
 document.getElementById("submitBtn").addEventListener("click", function () {
   regexInput = document.getElementById("regexInput").value; // Guardamos el valor de la expresión regular
-
+  resetForm()
+  
   // Llamamos a la API 1 para obtener el grafo según la expresión regular ingresada
   fetch(`http://localhost:3600/api1/${regexInput}`)
     .then((response) => {
@@ -127,8 +128,6 @@ function highlightEdge(graph, map, fromId, toId, duration) {
 function automaticTraversalNop() {
   if (currentIndexNop < currentTransitionsNop.length) {
     const transition = currentTransitionsNop[currentIndexNop];
-    console.log("hola"+transition);
-
 
     highlightNode(afdNopGraph, nodeIdMapNop, transition.node1, 1000);
     setTimeout(() => {
