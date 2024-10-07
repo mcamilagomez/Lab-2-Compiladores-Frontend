@@ -68,154 +68,161 @@ let nodeIdMapOpt = {};
 // Estado del recorrido para AFD No Óptimo
 let currentIndexNop = 0;
 let currentTransitionsNop = [];
-let currentStepNop = 0;
+let traversalIntervalNop = null;
 
 // Estado del recorrido para AFD Óptimo
 let currentIndexOpt = 0;
 let currentTransitionsOpt = [];
-let currentStepOpt = 0;
+let traversalIntervalOpt = null;
 
 // Función para construir el mapeo de etiquetas a IDs de nodos
 function construirMapeo(graph, map) {
-  // Limpiar el contenido del objeto sin reasignarlo
   Object.keys(map).forEach((key) => delete map[key]);
-
   const nodos = graph.body.data.nodes.get();
   nodos.forEach((nodo) => {
-    map[nodo.label.trim()] = nodo.id; // Usamos el 'label' como clave para el mapeo
+    map[nodo.label.trim()] = nodo.id;
   });
   console.log("Mapa de etiquetas a IDs:", map);
 }
 
-// Función para resaltar un nodo en el grafo
-function highlightNode(graph, map, nodeId) {
-  const mappedId = map[nodeId.trim()]; // Usamos el mapeo dinámico
+// Función para resaltar un nodo en el grafo y mantener el color original después de cierto tiempo
+function highlightNode(graph, map, nodeId, duration) { 
+  const mappedId = map[nodeId.trim()];
+  if (!mappedId) {
+    console.warn(`Node not found in the map: ${nodeId}`);
+    return;
+  }
+
   const node = graph.body.data.nodes.get(mappedId);
   if (node) {
-    console.log(`Highlighting node: ${nodeId} (mapped to ${mappedId})`);
-    // Resaltamos el nodo
-    graph.body.data.nodes.update({
-      id: mappedId,
-      color: { background: "#86a6b2" , border:"#86a6b2" },
-    });
+    const originalColor = { background: "#89CFF0", border: "#5DADE2" };
+    graph.body.data.nodes.update({ id: mappedId, color: { background: "gray", border: "gray" } });
+    setTimeout(() => {
+      graph.body.data.nodes.update({ id: mappedId, color: originalColor });
+    }, duration);
   } else {
-    console.warn(`Node not found: ${nodeId} (mapped to ${mappedId})`);
+    console.warn(`Node not found in the graph: ${nodeId}`);
   }
 }
 
-// Función para resaltar una arista en el grafo
-function highlightEdge(graph, map, fromId, toId) {
+// Función para resaltar una arista en el grafo y mantener el color original después de cierto tiempo
+function highlightEdge(graph, map, fromId, toId, duration) { 
   const mappedFromId = map[fromId.trim()];
   const mappedToId = map[toId.trim()];
   const edges = graph.body.data.edges.get();
-  const edge = edges.find(
-    (e) => e.from === mappedFromId && e.to === mappedToId
-  );
+  const edge = edges.find((e) => e.from === mappedFromId && e.to === mappedToId);
+
   if (edge) {
-    console.log(
-      `Highlighting edge from ${fromId} (${mappedFromId}) to ${toId} (${mappedToId})`
-    );
-    // Resaltamos la arista
-    graph.body.data.edges.update({ id: edge.id, color: { color: "#4f6d7a" } });
+    const originalColor = edge.color || { color: '#5DADE2' };
+    graph.body.data.edges.update({ id: edge.id, color: { color: "gray" } });
+    setTimeout(() => {
+      graph.body.data.edges.update({ id: edge.id, color: originalColor });
+    }, duration);
   } else {
-    console.warn(
-      `Edge not found from ${fromId} (${mappedFromId}) to ${toId} (${mappedToId})`
-    );
+    console.warn(`Edge not found from ${fromId} (${mappedFromId}) to ${toId} (${mappedToId})`);
   }
 }
 
-// Función para avanzar el recorrido de AFD No Óptimo
-function nextStepNop() {
+// Función para manejar el recorrido automático del AFD No Óptimo
+function automaticTraversalNop() {
   if (currentIndexNop < currentTransitionsNop.length) {
     const transition = currentTransitionsNop[currentIndexNop];
+    console.log("hola"+transition);
 
-    // Paso 1: Resaltar nodo de inicio
-    if (currentStepNop === 0) {
-      highlightNode(afdNopGraph, nodeIdMapNop, transition.node1);
-      currentStepNop++;
-    }
 
-    // Paso 2: Resaltar arista
-    else if (currentStepNop === 1) {
-      highlightEdge(
-        afdNopGraph,
-        nodeIdMapNop,
-        transition.node1,
-        transition.node2
-      );
-      currentStepNop++;
-    }
-
-    // Paso 3: Resaltar nodo de destino
-    else if (currentStepNop === 2) {
-      highlightNode(afdNopGraph, nodeIdMapNop, transition.node2);
-      currentStepNop = 0;
+    highlightNode(afdNopGraph, nodeIdMapNop, transition.node1, 1000);
+    setTimeout(() => {
+      highlightEdge(afdNopGraph, nodeIdMapNop, transition.node1, transition.node2, 1000);
+    }, 1000);
+    setTimeout(() => {
+      highlightNode(afdNopGraph, nodeIdMapNop, transition.node2, 1000);
       currentIndexNop++;
-    }
+    }, 2000);
   } else {
-    console.log("Recorrido en AFD No Óptimo completado");
+    clearInterval(traversalIntervalNop);
+    document.getElementById("repeatButtonNop").style.display = "inline";
+    console.log("Recorrido en AFD No Óptimo completado.");
   }
 }
 
-// Función para avanzar el recorrido de AFD Óptimo
-function nextStepOpt() {
+// Función para manejar el recorrido automático del AFD Óptimo
+function automaticTraversalOpt() {
   if (currentIndexOpt < currentTransitionsOpt.length) {
     const transition = currentTransitionsOpt[currentIndexOpt];
 
-    // Paso 1: Resaltar nodo de inicio
-    if (currentStepOpt === 0) {
-      highlightNode(afdOptGraph, nodeIdMapOpt, transition.node1);
-      currentStepOpt++;
-    }
-
-    // Paso 2: Resaltar arista
-    else if (currentStepOpt === 1) {
-      highlightEdge(
-        afdOptGraph,
-        nodeIdMapOpt,
-        transition.node1,
-        transition.node2
-      );
-      currentStepOpt++;
-    }
-
-    // Paso 3: Resaltar nodo de destino
-    else if (currentStepOpt === 2) {
-      highlightNode(afdOptGraph, nodeIdMapOpt, transition.node2);
-      currentStepOpt = 0;
+    highlightNode(afdOptGraph, nodeIdMapOpt, transition.node1, 1000);
+    setTimeout(() => {
+      highlightEdge(afdOptGraph, nodeIdMapOpt, transition.node1, transition.node2, 1000);
+    }, 1000);
+    setTimeout(() => {
+      highlightNode(afdOptGraph, nodeIdMapOpt, transition.node2, 1000);
       currentIndexOpt++;
-    }
+    }, 2000);
   } else {
-    console.log("Recorrido en AFD Óptimo completado");
+    clearInterval(traversalIntervalOpt);
+    document.getElementById("repeatButtonOpt").style.display = "inline";
+    console.log("Recorrido en AFD Óptimo completado.");
   }
 }
 
-// Función para iniciar el recorrido de AFD No Óptimo
-function startTraversalNop(transitions) {
-  currentTransitionsNop = transitions;
+// Función para iniciar el recorrido automático en AFD No Óptimo
+function startTraversalNop() {
   currentIndexNop = 0;
-  currentStepNop = 0;
-  nextStepNop();
+  traversalIntervalNop = setInterval(automaticTraversalNop, 3000);  // Cada 3 segundos avanzamos
+  document.getElementById("repeatButtonNop").style.display = "none";
 }
 
-// Función para iniciar el recorrido de AFD Óptimo
-function startTraversalOpt(transitions) {
-  currentTransitionsOpt = transitions;
+// Función para iniciar el recorrido automático en AFD Óptimo
+function startTraversalOpt() {
   currentIndexOpt = 0;
-  currentStepOpt = 0;
-  nextStepOpt();
+  traversalIntervalOpt = setInterval(automaticTraversalOpt, 3000);
+  document.getElementById("repeatButtonOpt").style.display = "none";
 }
+
+// Función para reiniciar el recorrido en AFD No Óptimo
+function resetTraversalNop() {
+  clearInterval(traversalIntervalNop);
+  currentIndexNop = 0;
+  startTraversalNop();
+}
+
+// Función para reiniciar el recorrido en AFD Óptimo
+function resetTraversalOpt() {
+  clearInterval(traversalIntervalOpt);
+  currentIndexOpt = 0;
+  startTraversalOpt();
+}
+
+// Asociar el botón "Start Traversal" al AFD No Óptimo
+document.getElementById("startButtonNop").addEventListener("click", function() {
+  startTraversalNop();
+});
+
+// Asociar el botón "Repeat Traversal" al AFD No Óptimo
+document.getElementById("repeatButtonNop").addEventListener("click", function() {
+  resetTraversalNop();
+});
+
+// Asociar el botón "Start Traversal" al AFD Óptimo
+document.getElementById("startButtonOpt").addEventListener("click", function() {
+  startTraversalOpt();
+});
+
+// Asociar el botón "Repeat Traversal" al AFD Óptimo
+document.getElementById("repeatButtonOpt").addEventListener("click", function() {
+  resetTraversalOpt();
+});
 
 // Llamada a las APIs para el AFD No Óptimo y AFD Óptimo
 document.getElementById("submitButton").addEventListener("click", function () {
   const inputCadena = document.getElementById("cadena").value;
-
+  
   // AFD No Óptimo
   fetch(`http://localhost:3600/api2/${regexInput}/nop/${inputCadena}`)
     .then((response) => response.json())
     .then((dataNop) => {
-      construirMapeo(afdNopGraph, nodeIdMapNop); // Construir el mapeo de nodos
-      startTraversalNop(dataNop.transitions); // Iniciar el recorrido en AFD No Óptimo
+      currentTransitionsNop = dataNop.transitions;
+      construirMapeo(afdNopGraph, nodeIdMapNop);
       mostrarRecorrido(dataNop, "AFD No Óptimo");
     })
     .catch((error) => console.error("Error en AFD No Óptimo:", error));
@@ -224,9 +231,9 @@ document.getElementById("submitButton").addEventListener("click", function () {
   fetch(`http://localhost:3600/api2/${regexInput}/op/${inputCadena}`)
     .then((response) => response.json())
     .then((dataOpt) => {
-      construirMapeo(afdOptGraph, nodeIdMapOpt); // Construir el mapeo de nodos
-      startTraversalOpt(dataOpt.transitions); // Iniciar el recorrido en AFD Óptimo
-      mostrarRecorrido(dataOpt, "AFD Óptimo");
+      currentTransitionsOpt = dataOpt.transitions;
+      construirMapeo(afdOptGraph, nodeIdMapOpt);
+      mostrarRecorrido(dataOpt,"AFD Óptimo" );
     })
     .catch((error) => console.error("Error en AFD Óptimo:", error));
 });
@@ -234,32 +241,48 @@ document.getElementById("submitButton").addEventListener("click", function () {
 
 // Función para mostrar el recorrido en el DOM y cambiar el color del input
 function mostrarRecorrido(data, afdType) {
-    let recorridoDiv;
-    let resultadoDiv;
-    let inputField = document.getElementById("cadena"); // Supongo que este es el input donde ingresas la cadena
-  
-    if (afdType === "AFD No Óptimo") {
-      recorridoDiv = document.getElementById("recorridoNop");
-      resultadoDiv = document.getElementById("resultadoNop");
-    } else if (afdType === "AFD Óptimo") {
-      recorridoDiv = document.getElementById("recorridoOpt");
-      resultadoDiv = document.getElementById("resultadoOpt");
-    }
-  
-    const transitions = data.transitions;
-    let recorridoText = "";
-  
-    transitions.forEach((transition) => {
-      recorridoText += `<div class="transition-container">
+  let recorridoDiv = "";
+  let resultadoDiv = "";
+  let inputField = document.getElementById("cadena"); // Input donde ingresas la cadena
+
+  // Asignar los elementos de acuerdo al tipo de AFD
+  if (afdType === "AFD No Óptimo") {
+    recorridoDiv = document.getElementById("recorridoNop");
+    resultadoDiv = document.getElementById("resultadoNop");
+  } else if (afdType === "AFD Óptimo") {
+    recorridoDiv = document.getElementById("recorridoOpt");
+    resultadoDiv = document.getElementById("resultadoOpt");
+  }
+
+  // Verificar si los divs existen antes de continuar
+  if (!recorridoDiv || !resultadoDiv) {
+    console.error("Error: Los contenedores para mostrar el recorrido o el resultado no existen.");
+    return; // Detenemos la ejecución si no existen los elementos
+  }
+  // Asegurarse de que los contenedores estén visibles si estaban ocultos
+  recorridoDiv.classList.remove('hidden');
+  resultadoDiv.classList.remove('hidden');
+
+  const transitions = data.transitions;
+  let recorridoText = "";
+
+  // Crear la representación del recorrido
+  transitions.forEach((transition) => {
+    recorridoText += `<div class="transition-container">
                           <span class="node">${transition.node1}</span> 
-                          <span class="arrow"><i class="fas fa-arrow-right"></i></span> 
+                          <div class="arrow">
+                            <i class="fas fa-arrow-right"></i>
+                            <span class="edge-label">${transition.chart}</span> <!-- Label de la arista -->
+                          </div>
                           <span class="node">${transition.node2}</span>
                         </div>`;
-    });
+  });
+
+  // Mostrar el recorrido con animación
+  recorridoDiv.innerHTML = `<div class="recorrido-container">${recorridoText}</div>`;
   
-    // Mostrar el recorrido con animación
-    recorridoDiv.innerHTML = `<div class="recorrido-container">${recorridoText}</div>`;
-    resultadoDiv.innerHTML = `<p class="result-text">
+  // Mostrar el resultado de aceptación o rechazo
+  resultadoDiv.innerHTML = `<p class="result-text">
           <span class="${data.sussefull ? "accepted" : "rejected"}">
           ${
             data.sussefull
@@ -267,51 +290,47 @@ function mostrarRecorrido(data, afdType) {
               : "Regular expression rejected"
           }
           </span></p>`;
-  
-    // Cambiar el color del cuadro de texto según si es aceptada o rechazada
-    if (data.sussefull) {
-      inputField.classList.remove("invalid-input");
-      inputField.classList.add("valid-input");
-    } else {
-      inputField.classList.remove("valid-input");
-      inputField.classList.add("invalid-input");
-    }
-  }
-  
-  // Llamada a las APIs para el AFD No Óptimo y AFD Óptimo
-  document.getElementById("submitButton").addEventListener("click", function () {
-    const inputCadena = document.getElementById("cadena").value;
-    // Aquí realizarías las llamadas a las APIs para validar la cadena con AFD No Óptimo y AFD Óptimo.
-  });
-  
-  // Función para resetear el campo de texto y los resultados
-  function resetForm() {
-    let inputField = document.getElementById("cadena"); // El campo de texto
-    let recorridoNop = document.getElementById("recorridoNop"); // Div del recorrido AFD No Óptimo
-    let recorridoOpt = document.getElementById("recorridoOpt"); // Div del recorrido AFD Óptimo
-    let resultadoNop = document.getElementById("resultadoNop"); // Div del resultado AFD No Óptimo
-    let resultadoOpt = document.getElementById("resultadoOpt"); // Div del resultado AFD Óptimo
-  
-    // Limpiar el campo de texto
-    inputField.value = "";
-  
-    // Eliminar las clases de valid-input y invalid-input
-    inputField.classList.remove("valid-input");
-    inputField.classList.remove("invalid-input");
-  
-    // Limpiar los divs de los recorridos y resultados
-    recorridoNop.innerHTML = "";
-    resultadoNop.innerHTML = "";
-    recorridoOpt.innerHTML = "";
-    resultadoOpt.innerHTML = "";
-  }
-  
-  // Añadir evento para el botón de reset
-  document.getElementById("resetButton").addEventListener("click", function () {
-    resetForm();
-  });
 
-  
+  // Cambiar el color del input según si la expresión regular fue aceptada o rechazada
+  if (data.sussefull) {
+    inputField.classList.remove("invalid-input");
+    inputField.classList.add("valid-input");
+  } else {
+    inputField.classList.remove("valid-input");
+    inputField.classList.add("invalid-input");
+  }
+}
+
+
+
+// Función para resetear el campo de texto y los resultados
+function resetForm() {
+  let inputField = document.getElementById("cadena"); // El campo de texto
+  let recorridoNop = document.getElementById("recorridoNop"); // Div del recorrido AFD No Óptimo
+  let recorridoOpt = document.getElementById("recorridoOpt"); // Div del recorrido AFD Óptimo
+  let resultadoNop = document.getElementById("resultadoNop"); // Div del resultado AFD No Óptimo
+  let resultadoOpt = document.getElementById("resultadoOpt"); // Div del resultado AFD Óptimo
+
+  // Limpiar el campo de texto
+  inputField.value = "";
+
+  // Eliminar las clases de valid-input y invalid-input
+  inputField.classList.remove("valid-input");
+  inputField.classList.remove("invalid-input");
+
+  // Limpiar los divs de los recorridos y resultados
+  recorridoNop.innerHTML = "";
+  resultadoNop.innerHTML = "";
+  recorridoOpt.innerHTML = "";
+  resultadoOpt.innerHTML = "";
+}
+
+// Añadir evento para el botón de reset
+document.getElementById("resetButton").addEventListener("click", function () {
+  resetForm();
+});
+
+
 function mostrarSimbolos(regex) {
   // Crear un Set para almacenar los símbolos únicos
   let simbolosSet = new Set();
@@ -364,6 +383,8 @@ function graficarGrafo(data) {
     nodes.add(nodeOptions);
   });
 
+
+
   // Añadir aristas
   data.graph.nodes.forEach((node) => {
     node.adj.forEach((adj) => {
@@ -398,7 +419,7 @@ function graficarGrafo(data) {
       label: "start",
       arrows: "to", // Flecha apuntando al nodo inicial
       color: {
-        color: "blue", // Color de la flecha
+        color: "#5DADE2",// Color de la flecha
         opacity: 1,
       },
     });
@@ -415,6 +436,7 @@ function graficarGrafo(data) {
     nodes: {
       shape: "circle",
       size: 20,
+      color: {background: '#89CFF0', border: '#5DADE2'},
       font: {
         size: 30,
       },
@@ -498,7 +520,7 @@ function TableAFDNop(data) {
 
   // Crear la tabla de transiciones del AFD no óptimo
   let afdTableHTML = `
-        <h3>Transitions (AFD No Óptimo)</h3>
+        <h3>Transitions</h3>
         <table>
             <thead>
                 <tr>
@@ -578,7 +600,7 @@ function TableAFDOpt(data) {
 
   // Crear la tabla de transiciones del AFD óptimo
   let afdTableHTML = `
-        <h3>Transitions (AFD Óptimo)</h3>
+        <h3>Transitions</h3>
         <table border="1" cellpadding="5" cellspacing="0">
             <thead>
                 <tr>
@@ -708,7 +730,7 @@ function graficarAFDOpt(data) {
       from: "invisible",
       to: initialNode,
       label: "start",
-      color: { color: "blue" },
+      color: { color: "#5DADE2" },
       arrows: { to: { enabled: true } },
     });
   }
@@ -803,7 +825,7 @@ function graficarAFDNop(data) {
       label: "start",
       arrows: "to", // Flecha apuntando al nodo inicial
       color: {
-        color: "blue", // Color de la flecha
+        color: "#5DADE2", // Color de la flecha
         opacity: 1, // Hacer visible la flecha
       },
     });
@@ -856,3 +878,79 @@ function mostrarIdenticos(data) {
     identicalDiv.innerHTML = `<h3>No identical states found.</h3>`;
   }
 }
+
+
+
+
+
+
+
+/*
+// Función para avanzar el recorrido de AFD No Óptimo
+function nextStepNop() {
+  if (currentIndexNop < currentTransitionsNop.length) {
+    const transition = currentTransitionsNop[currentIndexNop];
+
+    // Paso 1: Resaltar nodo de inicio
+    if (currentStepNop === 0) {
+      highlightNode(afdNopGraph, nodeIdMapNop, transition.node1,1000);
+      currentStepNop++;
+    }
+
+    // Paso 2: Resaltar arista
+    else if (currentStepNop === 1) {
+      highlightEdge(
+        afdNopGraph,
+        nodeIdMapNop,
+        transition.node1,
+        transition.node2,
+        1000
+      );
+      currentStepNop++;
+    }
+
+    // Paso 3: Resaltar nodo de destino
+    else if (currentStepNop === 2) {
+      highlightNode(afdNopGraph, nodeIdMapNop, transition.node2,1000);
+      currentStepNop = 0;
+      currentIndexNop++;
+    }
+  } else {
+    console.log("Recorrido en AFD No Óptimo completado");
+  }
+}
+
+// Función para avanzar el recorrido de AFD Óptimo
+function nextStepOpt() {
+  if (currentIndexOpt < currentTransitionsOpt.length) {
+    const transition = currentTransitionsOpt[currentIndexOpt];
+
+    // Paso 1: Resaltar nodo de inicio
+    if (currentStepOpt === 0) {
+      highlightNode(afdOptGraph, nodeIdMapOpt, transition.node1,1000);
+      currentStepOpt++;
+    }
+
+    // Paso 2: Resaltar arista
+    else if (currentStepOpt === 1) {
+      highlightEdge(
+        afdOptGraph,
+        nodeIdMapOpt,
+        transition.node1,
+        transition.node2,
+        1000
+      );
+      currentStepOpt++;
+    }
+
+    // Paso 3: Resaltar nodo de destino
+    else if (currentStepOpt === 2) {
+      highlightNode(afdOptGraph, nodeIdMapOpt, transition.node2,1000);
+      currentStepOpt = 0;
+      currentIndexOpt++;
+    }
+  } else {
+    console.log("Recorrido en AFD Óptimo completado");
+  }
+}
+*/

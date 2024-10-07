@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    
 </head>
 
 <body>
@@ -29,18 +27,16 @@
         </button>
     </div>
 
-
-
     <div class="container-cadena hidden">
         <input type="text" id="cadena" placeholder="Enter a string to test with the automaton...">
         <button id="submitButton">Validate</button>
         <button id="resetButton">Reset</button> 
-      </div>      
+    </div>      
 
 
     <div class="container-graph-table hidden">
         <div class="graph-container">
-            <h3>Thompson Graph</h3>
+            <h3>Non-deterministic Finite Automaton (NFA)</h3>
             <div id="network-thompson">
             </div>
         </div>
@@ -54,14 +50,13 @@
 
     <div class="container-graph-table hidden">
         <div class="graph-container">
-            <h3>AFD No Óptimo</h3>
-            <div id="network-afdnop">
-            </div>
-            <p class="text-next-button">When you enter a string, you can observe the traversal on the graph by clicking the 'Next Step' button</p>
-            <button id="nextButtonNop" class="start-traversal" onclick="nextStepNop()">Next Step</button>
-            <div id="recorridoNop" ></div>
-            <div id="resultadoNop" ></div>
-
+            <h3>Non-optimal Deterministic Finite Automaton</h3>
+            <div id="network-afdnop"></div>
+            <p class="text-next-button">Enter a string to see the graph traversal with 'Start' button</p>
+            <button id="startButtonNop" class="start-traversal">Start </button>
+            <button id="repeatButtonNop" class="start-traversal hidden">Repeat </button> <!-- Botón para repetir -->
+            <div id="recorridoNop"></div>
+            <div id="resultadoNop"></div>
         </div>
         <div class="table-container">
             <div class="simbolos"></div>
@@ -72,13 +67,13 @@
 
     <div class="container-graph-table hidden">
         <div class="graph-container">
-            <h3>AFD Óptimo</h3>
-            <div id="network-afdopt">
-            </div>
-            <p class="text-next-button">When you enter a string, you can observe the traversal on the graph by clicking the 'Next Step' button</p>
-            <button id="nextButtonOpt" class="start-traversal" onclick="nextStepOpt()">Next Step</button>
-            <div id="recorridoOpt" ></div>
-            <div id="resultadoOpt" ></div>
+            <h3>Optimal Deterministic Finite Automaton</h3>
+            <div id="network-afdopt"></div>
+            <p class="text-next-button">Enter a string to see the graph traversal with 'Start' button</p>
+            <button id="startButtonOpt" class="start-traversal">Start </button>
+            <button id="repeatButtonOpt" class="start-traversal hidden">Repeat </button> <!-- Botón para repetir -->
+            <div id="recorridoOpt"></div>
+            <div id="resultadoOpt"></div>
         </div>
         <div class="table-container">
             <div class="simbolos"></div>
@@ -87,9 +82,7 @@
         </div>
     </div>
 
-
-
-    <script src="scripts.js"></script>
+    <script src="scripts.js"></script> <!-- Vincular a tu archivo JavaScript -->
 </body>
 
 </html>
