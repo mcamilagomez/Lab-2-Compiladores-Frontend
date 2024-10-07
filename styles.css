@@ -237,6 +237,11 @@ h3 {
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Aumentar la sombra al pasar el mouse */
 }
 
+/* Estilo para los botones cuando están deshabilitados */
+button:disabled, .disabled-button {
+  background-color: #b0b0b0;
+  cursor: not-allowed; 
+} 
 
 .transition-container {
   display: flex;

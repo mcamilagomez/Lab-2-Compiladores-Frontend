@@ -5,7 +5,7 @@ let afdNopGraph, afdOptGraph; // Variables globales para los grafos
 document.getElementById("submitBtn").addEventListener("click", function () {
   regexInput = document.getElementById("regexInput").value; // Guardamos el valor de la expresión regular
   resetForm()
-  
+
   // Llamamos a la API 1 para obtener el grafo según la expresión regular ingresada
   fetch(`http://localhost:3600/api1/${regexInput}`)
     .then((response) => {
@@ -215,7 +215,9 @@ document.getElementById("repeatButtonOpt").addEventListener("click", function() 
 // Llamada a las APIs para el AFD No Óptimo y AFD Óptimo
 document.getElementById("submitButton").addEventListener("click", function () {
   const inputCadena = document.getElementById("cadena").value;
-  
+  clearInterval(traversalIntervalOpt);
+  clearInterval(traversalIntervalNop);
+
   // AFD No Óptimo
   fetch(`http://localhost:3600/api2/${regexInput}/nop/${inputCadena}`)
     .then((response) => response.json())
@@ -243,6 +245,12 @@ function mostrarRecorrido(data, afdType) {
   let recorridoDiv = "";
   let resultadoDiv = "";
   let inputField = document.getElementById("cadena"); // Input donde ingresas la cadena
+ 
+  let startButtonNop = document.getElementById("startButtonNop");
+  let startButtonOpt = document.getElementById("startButtonOpt");
+  let repeatButtonNop = document.getElementById("repeatButtonNop");
+  let repeatButtonOpt = document.getElementById("repeatButtonOpt");
+  
 
   // Asignar los elementos de acuerdo al tipo de AFD
   if (afdType === "AFD No Óptimo") {
@@ -258,6 +266,7 @@ function mostrarRecorrido(data, afdType) {
     console.error("Error: Los contenedores para mostrar el recorrido o el resultado no existen.");
     return; // Detenemos la ejecución si no existen los elementos
   }
+  
   // Asegurarse de que los contenedores estén visibles si estaban ocultos
   recorridoDiv.classList.remove('hidden');
   resultadoDiv.classList.remove('hidden');
@@ -283,23 +292,37 @@ function mostrarRecorrido(data, afdType) {
   // Mostrar el resultado de aceptación o rechazo
   resultadoDiv.innerHTML = `<p class="result-text">
           <span class="${data.sussefull ? "accepted" : "rejected"}">
-          ${
-            data.sussefull
-              ? "Regular expression accepted"
-              : "Regular expression rejected"
-          }
+          ${data.sussefull ? "Regular expression accepted" : "Regular expression rejected"}
           </span></p>`;
 
   // Cambiar el color del input según si la expresión regular fue aceptada o rechazada
   if (data.sussefull) {
     inputField.classList.remove("invalid-input");
     inputField.classList.add("valid-input");
+
+  
+    // Habilitar los botones de Start si la cadena es aceptada
+    startButtonNop.disabled = false;
+    startButtonOpt.disabled = false;
+    startButtonNop.classList.remove("disabled-button");
+    startButtonOpt.classList.remove("disabled-button");
+    
+
   } else {
     inputField.classList.remove("valid-input");
     inputField.classList.add("invalid-input");
+
+    
+    // Deshabilitar los botones de Start si la cadena es rechazada
+    startButtonNop.disabled = true;
+    startButtonOpt.disabled = true;
+    startButtonNop.classList.add("disabled-button");
+    startButtonOpt.classList.add("disabled-button");
+    repeatButtonNop.style.display = "none";
+    repeatButtonOpt.style.display = "none";
+    
   }
 }
-
 
 
 // Función para resetear el campo de texto y los resultados
