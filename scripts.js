@@ -1,88 +1,341 @@
 // Almacenar el valor de regexInput cuando se hace clic en el botón Send
-let regexInput = '';
-
+let regexInput = "";
 let afdNopGraph, afdOptGraph; // Variables globales para los grafos
 
-
 document.getElementById("submitBtn").addEventListener("click", function () {
-    regexInput = document.getElementById("regexInput").value; // Guardamos el valor de la expresión regular
+  regexInput = document.getElementById("regexInput").value; // Guardamos el valor de la expresión regular
 
-    // Llamamos a la API 1 para obtener el grafo según la expresión regular ingresada
-    fetch(`http://localhost:3600/api1/${regexInput}`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error("Error al cargar los datos");
-            }
-            return response.json();
-        })
-        .then((data) => {
-            // Graficar y mostrar datos solo después de que los datos se hayan cargado
-            graficarGrafo(data); // Graficar Thompson
-            graficarAFDNop(data); // Graficar AFD no óptimo
-            graficarAFDOpt(data); // Graficar AFD óptimo
-            TableThompson(data); // Mostrar tabla de Thompson
-            TableAFDNop(data); // Mostrar tabla del AFD no óptimo
-            TableAFDOpt(data); // Mostrar tabla del AFD óptimo
+  // Llamamos a la API 1 para obtener el grafo según la expresión regular ingresada
+  fetch(`http://localhost:3600/api1/${regexInput}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Error al cargar los datos");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Graficar y mostrar datos solo después de que los datos se hayan cargado
+      graficarGrafo(data); // Graficar Thompson
+      graficarAFDNop(data); // Graficar AFD no óptimo
+      graficarAFDOpt(data); // Graficar AFD óptimo
+      TableThompson(data); // Mostrar tabla de Thompson
+      TableAFDNop(data); // Mostrar tabla del AFD no óptimo
+      TableAFDOpt(data); // Mostrar tabla del AFD óptimo
 
-            mostrarIdenticos(data); // Mostrar los estados idénticos
-            mostrarSimbolos(regexInput); // Mostrar símbolos
+      mostrarIdenticos(data); // Mostrar los estados idénticos
+      mostrarSimbolos(regexInput); // Mostrar símbolos
 
-            // Volver a mostrar los gráficos y tablas una vez que se han cargado
-            document
-                .querySelectorAll(".container-graph-table")
-                .forEach(function (element) {
-                    element.classList.remove("hidden");
-                });
-
-            document
-                .querySelectorAll(".container-cadena")
-                .forEach(function (element) {
-                    element.classList.remove("hidden");
-                });
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-            alert(
-                "Error al cargar los datos. Verifica la expresión regular o el servidor."
-            );
+      // Volver a mostrar los gráficos y tablas una vez que se han cargado
+      document
+        .querySelectorAll(".container-graph-table")
+        .forEach(function (element) {
+          element.classList.remove("hidden");
         });
+
+      document
+        .querySelectorAll(".container-cadena")
+        .forEach(function (element) {
+          element.classList.remove("hidden");
+        });
+    })
+    .catch((error) => {
+      console.error("Error:", error.message || error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error al cargar datos",
+        html: `
+                <p><strong style="color: #d33;">Verifica lo siguiente:</strong></p>
+                <ul style="text-align: left; list-style-type: disc; margin-left: 20px;">
+                    <li>Expresión regular válida.</li>
+                    <li>Servidor en funcionamiento.</li>
+                    <li>Revisa la consola para más detalles.</li>
+                </ul>
+            `,
+        confirmButtonText: "Entendido",
+        confirmButtonColor: "gray",
+        customClass: {
+          popup: "smaller-swal-popup", // Clase personalizada para el popup
+        },
+      });
+    });
 });
 
+// Crear un objeto de mapeo dinámico para cada grafo
+let nodeIdMapNop = {};
+let nodeIdMapOpt = {};
 
-// Evento para validar la cadena ingresada
-document.getElementById("submitButton").addEventListener("click", function () {
-    const Inputcadena = document.getElementById("cadena").value;
+// Estado del recorrido para AFD No Óptimo
+let currentIndexNop = 0;
+let currentTransitionsNop = [];
+let currentStepNop = 0;
 
-    // Aquí es donde llamaremos a la API 2 para validar la cadena ingresada   
-        
-});
+// Estado del recorrido para AFD Óptimo
+let currentIndexOpt = 0;
+let currentTransitionsOpt = [];
+let currentStepOpt = 0;
 
+// Función para construir el mapeo de etiquetas a IDs de nodos
+function construirMapeo(graph, map) {
+  // Limpiar el contenido del objeto sin reasignarlo
+  Object.keys(map).forEach((key) => delete map[key]);
 
+  const nodos = graph.body.data.nodes.get();
+  nodos.forEach((nodo) => {
+    map[nodo.label.trim()] = nodo.id; // Usamos el 'label' como clave para el mapeo
+  });
+  console.log("Mapa de etiquetas a IDs:", map);
+}
 
-function mostrarSimbolos(regex) {
-    // Crear un Set para almacenar los símbolos únicos
-    let simbolosSet = new Set();
+// Función para resaltar un nodo en el grafo
+function highlightNode(graph, map, nodeId) {
+  const mappedId = map[nodeId.trim()]; // Usamos el mapeo dinámico
+  const node = graph.body.data.nodes.get(mappedId);
+  if (node) {
+    console.log(`Highlighting node: ${nodeId} (mapped to ${mappedId})`);
+    // Resaltamos el nodo
+    graph.body.data.nodes.update({
+      id: mappedId,
+      color: { background: "#86a6b2" , border:"#86a6b2" },
+    });
+  } else {
+    console.warn(`Node not found: ${nodeId} (mapped to ${mappedId})`);
+  }
+}
 
-    // Recorrer la expresión regular y agregar solo los símbolos válidos (ej. letras a-z)
-    for (let char of regex) {
-        if (/[a-zA-Z]/.test(char)) {  // Filtrar solo letras (puedes ajustar esto si tu alfabeto incluye otros símbolos)
-            simbolosSet.add(char);
-        }
+// Función para resaltar una arista en el grafo
+function highlightEdge(graph, map, fromId, toId) {
+  const mappedFromId = map[fromId.trim()];
+  const mappedToId = map[toId.trim()];
+  const edges = graph.body.data.edges.get();
+  const edge = edges.find(
+    (e) => e.from === mappedFromId && e.to === mappedToId
+  );
+  if (edge) {
+    console.log(
+      `Highlighting edge from ${fromId} (${mappedFromId}) to ${toId} (${mappedToId})`
+    );
+    // Resaltamos la arista
+    graph.body.data.edges.update({ id: edge.id, color: { color: "#4f6d7a" } });
+  } else {
+    console.warn(
+      `Edge not found from ${fromId} (${mappedFromId}) to ${toId} (${mappedToId})`
+    );
+  }
+}
+
+// Función para avanzar el recorrido de AFD No Óptimo
+function nextStepNop() {
+  if (currentIndexNop < currentTransitionsNop.length) {
+    const transition = currentTransitionsNop[currentIndexNop];
+
+    // Paso 1: Resaltar nodo de inicio
+    if (currentStepNop === 0) {
+      highlightNode(afdNopGraph, nodeIdMapNop, transition.node1);
+      currentStepNop++;
     }
 
-    // Convertir el Set a un array y luego a un string en formato {a, b, ...}
-    let simbolosArray = Array.from(simbolosSet).sort(); // Ordenar alfabéticamente
-    let simbolosString = `Σ = {${simbolosArray.join(', ')}}`;
+    // Paso 2: Resaltar arista
+    else if (currentStepNop === 1) {
+      highlightEdge(
+        afdNopGraph,
+        nodeIdMapNop,
+        transition.node1,
+        transition.node2
+      );
+      currentStepNop++;
+    }
 
-    // Seleccionar todos los elementos con la clase 'simbolos' e insertar el HTML en cada uno
-    document.querySelectorAll('.simbolos').forEach(function(simbolosDiv) {
-        simbolosDiv.innerHTML = `
+    // Paso 3: Resaltar nodo de destino
+    else if (currentStepNop === 2) {
+      highlightNode(afdNopGraph, nodeIdMapNop, transition.node2);
+      currentStepNop = 0;
+      currentIndexNop++;
+    }
+  } else {
+    console.log("Recorrido en AFD No Óptimo completado");
+  }
+}
+
+// Función para avanzar el recorrido de AFD Óptimo
+function nextStepOpt() {
+  if (currentIndexOpt < currentTransitionsOpt.length) {
+    const transition = currentTransitionsOpt[currentIndexOpt];
+
+    // Paso 1: Resaltar nodo de inicio
+    if (currentStepOpt === 0) {
+      highlightNode(afdOptGraph, nodeIdMapOpt, transition.node1);
+      currentStepOpt++;
+    }
+
+    // Paso 2: Resaltar arista
+    else if (currentStepOpt === 1) {
+      highlightEdge(
+        afdOptGraph,
+        nodeIdMapOpt,
+        transition.node1,
+        transition.node2
+      );
+      currentStepOpt++;
+    }
+
+    // Paso 3: Resaltar nodo de destino
+    else if (currentStepOpt === 2) {
+      highlightNode(afdOptGraph, nodeIdMapOpt, transition.node2);
+      currentStepOpt = 0;
+      currentIndexOpt++;
+    }
+  } else {
+    console.log("Recorrido en AFD Óptimo completado");
+  }
+}
+
+// Función para iniciar el recorrido de AFD No Óptimo
+function startTraversalNop(transitions) {
+  currentTransitionsNop = transitions;
+  currentIndexNop = 0;
+  currentStepNop = 0;
+  nextStepNop();
+}
+
+// Función para iniciar el recorrido de AFD Óptimo
+function startTraversalOpt(transitions) {
+  currentTransitionsOpt = transitions;
+  currentIndexOpt = 0;
+  currentStepOpt = 0;
+  nextStepOpt();
+}
+
+// Llamada a las APIs para el AFD No Óptimo y AFD Óptimo
+document.getElementById("submitButton").addEventListener("click", function () {
+  const inputCadena = document.getElementById("cadena").value;
+
+  // AFD No Óptimo
+  fetch(`http://localhost:3600/api2/${regexInput}/nop/${inputCadena}`)
+    .then((response) => response.json())
+    .then((dataNop) => {
+      construirMapeo(afdNopGraph, nodeIdMapNop); // Construir el mapeo de nodos
+      startTraversalNop(dataNop.transitions); // Iniciar el recorrido en AFD No Óptimo
+      mostrarRecorrido(dataNop, "AFD No Óptimo");
+    })
+    .catch((error) => console.error("Error en AFD No Óptimo:", error));
+
+  // AFD Óptimo
+  fetch(`http://localhost:3600/api2/${regexInput}/op/${inputCadena}`)
+    .then((response) => response.json())
+    .then((dataOpt) => {
+      construirMapeo(afdOptGraph, nodeIdMapOpt); // Construir el mapeo de nodos
+      startTraversalOpt(dataOpt.transitions); // Iniciar el recorrido en AFD Óptimo
+      mostrarRecorrido(dataOpt, "AFD Óptimo");
+    })
+    .catch((error) => console.error("Error en AFD Óptimo:", error));
+});
+
+
+// Función para mostrar el recorrido en el DOM y cambiar el color del input
+function mostrarRecorrido(data, afdType) {
+    let recorridoDiv;
+    let resultadoDiv;
+    let inputField = document.getElementById("cadena"); // Supongo que este es el input donde ingresas la cadena
+  
+    if (afdType === "AFD No Óptimo") {
+      recorridoDiv = document.getElementById("recorridoNop");
+      resultadoDiv = document.getElementById("resultadoNop");
+    } else if (afdType === "AFD Óptimo") {
+      recorridoDiv = document.getElementById("recorridoOpt");
+      resultadoDiv = document.getElementById("resultadoOpt");
+    }
+  
+    const transitions = data.transitions;
+    let recorridoText = "";
+  
+    transitions.forEach((transition) => {
+      recorridoText += `<div class="transition-container">
+                          <span class="node">${transition.node1}</span> 
+                          <span class="arrow"><i class="fas fa-arrow-right"></i></span> 
+                          <span class="node">${transition.node2}</span>
+                        </div>`;
+    });
+  
+    // Mostrar el recorrido con animación
+    recorridoDiv.innerHTML = `<div class="recorrido-container">${recorridoText}</div>`;
+    resultadoDiv.innerHTML = `<p class="result-text">
+          <span class="${data.sussefull ? "accepted" : "rejected"}">
+          ${
+            data.sussefull
+              ? "Regular expression accepted"
+              : "Regular expression rejected"
+          }
+          </span></p>`;
+  
+    // Cambiar el color del cuadro de texto según si es aceptada o rechazada
+    if (data.sussefull) {
+      inputField.classList.remove("invalid-input");
+      inputField.classList.add("valid-input");
+    } else {
+      inputField.classList.remove("valid-input");
+      inputField.classList.add("invalid-input");
+    }
+  }
+  
+  // Llamada a las APIs para el AFD No Óptimo y AFD Óptimo
+  document.getElementById("submitButton").addEventListener("click", function () {
+    const inputCadena = document.getElementById("cadena").value;
+    // Aquí realizarías las llamadas a las APIs para validar la cadena con AFD No Óptimo y AFD Óptimo.
+  });
+  
+  // Función para resetear el campo de texto y los resultados
+  function resetForm() {
+    let inputField = document.getElementById("cadena"); // El campo de texto
+    let recorridoNop = document.getElementById("recorridoNop"); // Div del recorrido AFD No Óptimo
+    let recorridoOpt = document.getElementById("recorridoOpt"); // Div del recorrido AFD Óptimo
+    let resultadoNop = document.getElementById("resultadoNop"); // Div del resultado AFD No Óptimo
+    let resultadoOpt = document.getElementById("resultadoOpt"); // Div del resultado AFD Óptimo
+  
+    // Limpiar el campo de texto
+    inputField.value = "";
+  
+    // Eliminar las clases de valid-input y invalid-input
+    inputField.classList.remove("valid-input");
+    inputField.classList.remove("invalid-input");
+  
+    // Limpiar los divs de los recorridos y resultados
+    recorridoNop.innerHTML = "";
+    resultadoNop.innerHTML = "";
+    recorridoOpt.innerHTML = "";
+    resultadoOpt.innerHTML = "";
+  }
+  
+  // Añadir evento para el botón de reset
+  document.getElementById("resetButton").addEventListener("click", function () {
+    resetForm();
+  });
+
+  
+function mostrarSimbolos(regex) {
+  // Crear un Set para almacenar los símbolos únicos
+  let simbolosSet = new Set();
+
+  // Recorrer la expresión regular y agregar solo los símbolos válidos (ej. letras a-z)
+  for (let char of regex) {
+    if (/[a-zA-Z]/.test(char)) {
+      // Filtrar solo letras (puedes ajustar esto si tu alfabeto incluye otros símbolos)
+      simbolosSet.add(char);
+    }
+  }
+
+  // Convertir el Set a un array y luego a un string en formato {a, b, ...}
+  let simbolosArray = Array.from(simbolosSet).sort(); // Ordenar alfabéticamente
+  let simbolosString = `Σ = {${simbolosArray.join(", ")}}`;
+
+  // Seleccionar todos los elementos con la clase 'simbolos' e insertar el HTML en cada uno
+  document.querySelectorAll(".simbolos").forEach(function (simbolosDiv) {
+    simbolosDiv.innerHTML = `
             <h3>Symbols</h3>
             <p>${simbolosString}</p>
         `;
-    });
+  });
 }
-
 
 function graficarGrafo(data) {
   const nodes = new vis.DataSet();
@@ -92,18 +345,15 @@ function graficarGrafo(data) {
   let initialNode = null;
   let finalNode = null;
 
+  // Añadir nodos
   data.graph.nodes.forEach((node) => {
     let nodeOptions = {
       id: node.tag,
-      label:
-        `Node ${node.tag}` +
-        (node.initial ? " (Inicial)" : "") +
-        (node.final ? " (Final)" : ""),
+      label: `${node.tag}` + (node.initial ? "" : "") + (node.final ? " " : ""),
       shape: node.final ? "box" : "circle",
       borderWidth: node.final ? 4 : 1, // Borde más ancho para el nodo final
     };
 
-    // Guardamos el nodo inicial y final
     if (node.initial) {
       initialNode = node.tag;
     }
@@ -114,22 +364,26 @@ function graficarGrafo(data) {
     nodes.add(nodeOptions);
   });
 
-  // Agregar las aristas (edges) del grafo
+  // Añadir aristas
   data.graph.nodes.forEach((node) => {
     node.adj.forEach((adj) => {
+      const destino = adj[0]; // Nodo de destino
+      const transicion = adj[1]; // Símbolo de transición, puede ser "a", "b", "&", etc.
+
+      // Añadir la arista con la etiqueta correcta
       edges.add({
         from: node.tag,
-        to: adj[0],
-        label: "&",
+        to: destino,
+        label: transicion, // Asigna la transición correcta de los datos
       });
     });
   });
 
-  // Si existe un nodo inicial, agregamos un nodo invisible apuntando a él
+  // Si existe un nodo inicial, agregar un nodo invisible apuntando a él
   if (initialNode !== null) {
     nodes.add({
-      id: "invisible", // Nodo invisible
-      label: "start", // Sin etiqueta
+      id: "invisible",
+      label: "", // Sin etiqueta
       shape: "circle",
       size: 1, // Tamaño pequeño (prácticamente invisible)
       color: {
@@ -141,10 +395,11 @@ function graficarGrafo(data) {
     edges.add({
       from: "invisible",
       to: initialNode,
+      label: "start",
       arrows: "to", // Flecha apuntando al nodo inicial
       color: {
-        color: "blue", // Color de la flecha (puedes cambiarlo si lo prefieres invisible)
-        opacity: 1, // Hacer visible la flecha
+        color: "blue", // Color de la flecha
+        opacity: 1,
       },
     });
   }
@@ -161,7 +416,7 @@ function graficarGrafo(data) {
       shape: "circle",
       size: 20,
       font: {
-        size: 16,
+        size: 30,
       },
     },
     edges: {
@@ -278,7 +533,7 @@ function TableAFDNop(data) {
 
   // Crear la segunda tabla (Estados equivalentes de NFA)
   let tTableHTML = `
-        <h3>T</h3>
+        <h3>States</h3>
         <table>
             <thead>
                 <tr>
@@ -303,222 +558,6 @@ function TableAFDNop(data) {
 
   // Mostrar ambas tablas
   tablesDiv.innerHTML = afdTableHTML + tTableHTML;
-}
-function graficarAFDNop(data) {
-  const nodes = new vis.DataSet();
-  const edges = new vis.DataSet();
-
-  // Identificadores para los nodos iniciales y finales
-  let initialNode = null;
-  let finalNode = null;
-
-  const afdNopStates = Object.keys(data.AFDnop.states);
-  const alphabet =
-    data.alphabet ||
-    Object.keys(data.AFDnop).filter((k) => k !== "states" && k !== "values"); // Extraer el alfabeto
-
-  afdNopStates.forEach((key) => {
-    let nodeOptions = {
-      id: key,
-      label:
-        `Node ${data.AFDnop.states[key]}` +
-        (data.AFDnop.values[key].includes("->") ? " (Inicial)" : "") +
-        (data.AFDnop.values[key].includes("*") ? " (Final)" : ""),
-      shape: data.AFDnop.values[key].includes("*") ? "box" : "circle",
-      borderWidth: data.AFDnop.values[key].includes("*") ? 4 : 1, // Borde más ancho para el nodo final
-    };
-
-    if (data.AFDnop.values[key].includes("->")) {
-      initialNode = key;
-    }
-    if (data.AFDnop.values[key].includes("*")) {
-      finalNode = key;
-    }
-
-    nodes.add(nodeOptions);
-  });
-
-  // Agregar transiciones (aristas) según el alfabeto
-  alphabet.forEach((symbol) => {
-    Object.keys(data.AFDnop[symbol]).forEach((fromState) => {
-      const toState = data.AFDnop[symbol][fromState];
-      edges.add({
-        from: fromState,
-        to: Object.keys(data.AFDnop.states).find(
-          (key) => data.AFDnop.states[key] === toState
-        ),
-        label: symbol,
-        color: {
-          color: "blue", // Flecha azul
-        },
-        arrows: {
-          to: { enabled: true },
-        },
-      });
-    });
-  });
-
-  // Si existe un nodo inicial, agregar un nodo invisible apuntando a él
-  if (initialNode !== null) {
-    nodes.add({
-      id: "invisible", // Nodo invisible
-      label: "start", // Sin etiqueta
-      shape: "circle",
-      size: 1, // Tamaño muy pequeño
-      color: {
-        background: "rgba(0, 0, 0, 0)", // Fondo transparente
-        border: "rgba(0, 0, 0, 0)", // Borde transparente
-      },
-    });
-
-    edges.add({
-      from: "invisible",
-      to: initialNode,
-      arrows: "to", // Flecha apuntando al nodo inicial
-      color: {
-        color: "blue", // Flecha negra
-        opacity: 1, // Visible
-      },
-    });
-  }
-
-  const container = document.getElementById("network-afdnop"); // Asegúrate de que este sea el contenedor correcto
-  const networkData = {
-    nodes: nodes,
-    edges: edges,
-  };
-
-  const options = {
-    nodes: {
-      shape: "circle",
-      size: 20,
-      font: {
-        size: 16,
-      },
-    },
-    edges: {
-      arrows: {
-        to: { enabled: true },
-      },
-      length: 200,
-    },
-    physics: {
-      enabled: true,
-    },
-  };
-
-  afdNopGraph = new vis.Network(container, networkData, options);
-}
-
-function graficarAFDOpt(data) {
-  const nodes = new vis.DataSet();
-  const edges = new vis.DataSet();
-
-  // Identificadores para los nodos iniciales y finales
-  let initialNode = null;
-  let finalNode = null;
-
-  // Datos del AFD óptimo
-  const afdOpt = data.AFDop;
-
-  // Agregar nodos (estados)
-  Object.keys(afdOpt.states).forEach((key) => {
-    let nodeOptions = {
-      id: key,
-      label:
-        `Node ${afdOpt.states[key]}` +
-        (afdOpt.values[key].includes("->") ? " (Inicial)" : "") +
-        (afdOpt.values[key].includes("*") ? " (Final)" : ""),
-      shape: afdOpt.values[key].includes("*") ? "box" : "circle",
-      borderWidth: afdOpt.values[key].includes("*") ? 4 : 1, // Borde más ancho para el nodo final
-    };
-
-    if (afdOpt.values[key].includes("->")) {
-      initialNode = key;
-    }
-    if (afdOpt.values[key].includes("*")) {
-      finalNode = key;
-    }
-
-    nodes.add(nodeOptions);
-  });
-
-  // Agregar las transiciones basadas en los símbolos del alfabeto
-  Object.keys(afdOpt)
-    .filter((key) => key !== "states" && key !== "values")
-    .forEach((symbol) => {
-      Object.keys(afdOpt[symbol]).forEach((fromState) => {
-        const toState = afdOpt[symbol][fromState];
-        if (toState) {
-          // Verificar que la transición exista
-          edges.add({
-            from: fromState,
-            to: Object.keys(afdOpt.states).find(
-              (key) => afdOpt.states[key] === toState
-            ),
-            label: symbol,
-            color: {
-              color: "blue", // Flecha azul
-            },
-            arrows: {
-              to: { enabled: true },
-            },
-          });
-        }
-      });
-    });
-
-  // Si existe un nodo inicial, agregar un nodo invisible apuntando a él
-  if (initialNode !== null) {
-    nodes.add({
-      id: "invisible", // Nodo invisible
-      label: "start", // Sin etiqueta
-      shape: "circle",
-      size: 1, // Tamaño muy pequeño
-      color: {
-        background: "rgba(0, 0, 0, 0)", // Fondo transparente
-        border: "rgba(0, 0, 0, 0)", // Borde transparente
-      },
-    });
-
-    edges.add({
-      from: "invisible",
-      to: initialNode,
-      arrows: "to", // Flecha apuntando al nodo inicial
-      color: {
-        color: "blue", // Flecha negra
-        opacity: 1, // Visible
-      },
-    });
-  }
-
-  // Crear el grafo en el contenedor `network-afdopt`
-  const container = document.getElementById("network-afdopt");
-  const networkData = {
-    nodes: nodes,
-    edges: edges,
-  };
-
-  const options = {
-    nodes: {
-      shape: "circle",
-      size: 20,
-      font: {
-        size: 16,
-      },
-    },
-    edges: {
-      arrows: {
-        to: { enabled: true },
-      },
-      length: 200,
-    },
-    physics: {
-      enabled: true,
-    },
-  };
-
-  afdOptGraph= new vis.Network(container, networkData, options);
 }
 
 function TableAFDOpt(data) {
@@ -599,6 +638,206 @@ function TableAFDOpt(data) {
 
   // Mostrar ambas tablas
   tablesDiv.innerHTML = afdTableHTML + sigStatesHTML;
+}
+
+function graficarAFDOpt(data) {
+  const nodes = new vis.DataSet();
+  const edges = new vis.DataSet();
+
+  // Identificadores para los nodos iniciales y finales
+  let initialNode = null;
+  let finalNode = null;
+
+  // Datos del AFD óptimo
+  const afdOpt = data.AFDop;
+
+  // Agregar nodos (estados)
+  Object.keys(afdOpt.states).forEach((key) => {
+    let nodeOptions = {
+      id: key,
+      label:
+        ` ${afdOpt.states[key]}` +
+        (afdOpt.values[key].includes("->") ? "" : "") +
+        (afdOpt.values[key].includes("*") ? "" : ""),
+      shape: afdOpt.values[key].includes("*") ? "box" : "circle",
+      borderWidth: afdOpt.values[key].includes("*") ? 4 : 1, // Borde más ancho para el nodo final
+    };
+
+    if (afdOpt.values[key].includes("->")) {
+      initialNode = key;
+    }
+    if (afdOpt.values[key].includes("*")) {
+      finalNode = key;
+    }
+
+    nodes.add(nodeOptions);
+  });
+
+  // Agregar las transiciones (aristas) basadas en los símbolos del alfabeto con IDs únicos
+  Object.keys(afdOpt)
+    .filter((key) => key !== "states" && key !== "values")
+    .forEach((symbol) => {
+      Object.keys(afdOpt[symbol]).forEach((fromState) => {
+        const toState = afdOpt[symbol][fromState];
+        if (toState) {
+          const edgeId = `${fromState}-${toState}-${symbol}`; // ID único para las aristas
+          edges.add({
+            id: edgeId, // ID único
+            from: fromState,
+            to: Object.keys(afdOpt.states).find(
+              (key) => afdOpt.states[key] === toState
+            ),
+            label: symbol,
+            arrows: { to: { enabled: true } },
+          });
+        }
+      });
+    });
+
+  // Si existe un nodo inicial, agregar un nodo invisible apuntando a él
+  if (initialNode !== null) {
+    nodes.add({
+      id: "invisible", // Nodo invisible
+      label: "",
+      shape: "circle",
+      size: 1, // Tamaño muy pequeño
+      color: { background: "rgba(0, 0, 0, 0)", border: "rgba(0, 0, 0, 0)" },
+    });
+
+    edges.add({
+      from: "invisible",
+      to: initialNode,
+      label: "start",
+      color: { color: "blue" },
+      arrows: { to: { enabled: true } },
+    });
+  }
+
+  // Crear el grafo en el contenedor `network-afdopt`
+  const container = document.getElementById("network-afdopt");
+  const networkData = { nodes: nodes, edges: edges };
+
+  const options = {
+    nodes: { shape: "circle", size: 20, font: { size: 30 } },
+    edges: { arrows: { to: { enabled: true } }, length: 200 },
+    physics: { enabled: true },
+  };
+
+  console.log("Nodos en AFD Óptimo:", nodes.get());
+  console.log("Aristas en AFD Óptimo:", edges.get());
+
+  afdOptGraph = new vis.Network(container, networkData, options);
+}
+
+function graficarAFDNop(data) {
+  const nodes = new vis.DataSet();
+  const edges = new vis.DataSet();
+
+  // Identificadores para los nodos iniciales y finales
+  let initialNode = null;
+  let finalNode = null;
+
+  const afdNopStates = Object.keys(data.AFDnop.states);
+  const alphabet =
+    data.alphabet ||
+    Object.keys(data.AFDnop).filter((k) => k !== "states" && k !== "values"); // Extraer el alfabeto
+
+  afdNopStates.forEach((key) => {
+    let nodeOptions = {
+      id: key,
+      label:
+        `${data.AFDnop.states[key]}` +
+        (data.AFDnop.values[key].includes("->") ? "" : "") +
+        (data.AFDnop.values[key].includes("*") ? "" : ""),
+      shape: data.AFDnop.values[key].includes("*") ? "box" : "circle",
+      borderWidth: data.AFDnop.values[key].includes("*") ? 4 : 1, // Borde más ancho para el nodo final
+    };
+
+    if (data.AFDnop.values[key].includes("->")) {
+      initialNode = key;
+    }
+    if (data.AFDnop.values[key].includes("*")) {
+      finalNode = key;
+    }
+
+    nodes.add(nodeOptions);
+  });
+
+  // Agregar transiciones (aristas) según el alfabeto con IDs únicos
+  alphabet.forEach((symbol) => {
+    Object.keys(data.AFDnop[symbol]).forEach((fromState) => {
+      const toState = data.AFDnop[symbol][fromState];
+      if (toState) {
+        const edgeId = `${fromState}-${toState}-${symbol}`; // ID único para las aristas
+        edges.add({
+          id: edgeId, // ID único
+          from: fromState,
+          to: Object.keys(data.AFDnop.states).find(
+            (key) => data.AFDnop.states[key] === toState
+          ),
+          label: symbol,
+          arrows: {
+            to: { enabled: true },
+          },
+        });
+      }
+    });
+  });
+
+  // Si existe un nodo inicial, agregar un nodo invisible apuntando a él
+  if (initialNode !== null) {
+    nodes.add({
+      id: "invisible", // Nodo invisible
+      label: "", // Sin etiqueta
+      shape: "circle",
+      size: 1, // Tamaño muy pequeño
+      color: {
+        background: "rgba(0, 0, 0, 0)", // Fondo transparente
+        border: "rgba(0, 0, 0, 0)", // Borde transparente
+      },
+    });
+
+    edges.add({
+      from: "invisible",
+      to: initialNode,
+      label: "start",
+      arrows: "to", // Flecha apuntando al nodo inicial
+      color: {
+        color: "blue", // Color de la flecha
+        opacity: 1, // Hacer visible la flecha
+      },
+    });
+  }
+
+  const container = document.getElementById("network-afdnop"); // Asegúrate de que este sea el contenedor correcto
+  const networkData = {
+    nodes: nodes,
+    edges: edges,
+  };
+
+  const options = {
+    nodes: {
+      shape: "circle",
+      size: 20,
+      font: {
+        size: 30,
+      },
+    },
+    edges: {
+      arrows: {
+        to: { enabled: true },
+      },
+      length: 200,
+    },
+    physics: {
+      enabled: true,
+    },
+  };
+
+  console.log("Nodos en AFD No Óptimo:", nodes.get());
+  console.log("Aristas en AFD No Óptimo:", edges.get());
+
+  afdNopGraph = new vis.Network(container, networkData, options);
 }
 
 function mostrarIdenticos(data) {

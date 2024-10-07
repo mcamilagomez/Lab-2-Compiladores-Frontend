@@ -1,292 +1,314 @@
 body {
-    font-family: 'Poppins', sans-serif; 
-    margin: 20px;
-    padding: 0;
-    background-color: #f4f4f4;
+  font-family: "Poppins", sans-serif;
+  margin: 20px;
+  padding: 0;
+  background-color: #f4f4f4;
 }
 
-
 h2 {
-    color: #333;
-    margin-bottom: 10px;
-    text-align: center;
+  color: #333;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 h3 {
-    text-align: center;
-}
-
-
-
-#regexInputContainer {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-#regexInput {
-    font-family: 'Poppins', sans-serif;
-    padding: 10px;
-    width: 300px;
-    border-radius: 6px;
-    margin-right: 5px;
-    border: 1px solid #ced4da;
-    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transición suave */
-    
+  text-align: center;
 }
 
 #regexInputContainer {
-    text-align: center;
-    margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 #regexInput {
-    font-family: 'Poppins', sans-serif;
-    padding: 10px;
-    width: 300px;
-    border-radius: 6px;
-    margin-right: 5px;
-    border: 1px solid #ccc;
-    font-size: 16px;
+  font-family: "Poppins", sans-serif;
+  padding: 8px;
+  width: 300px;
+  border-radius: 6px;
+  margin-right: 5px;
+  border: 1px solid #ced4da;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  font-size: 12px;
 }
 
 #submitBtn {
-    border: none;
-    padding: 4px 5px 4px 5px;
-    cursor: pointer;
-    border-radius: 6px;
-    color: white;
-    transition: background-color 0.3s ease;
+  border: none;
+  padding: 4px 5px 4px 5px;
+  cursor: pointer;
+  border-radius: 6px;
+  color: white;
+  transition: background-color 0.3s ease;
 }
 
 #submitBtn:hover {
-    background-color: #245d75;
+  background-color: #245d75;
 }
 
 #submitBtn svg {
-    width: 20px;
-    height: 20px;
-    stroke:  #668fa1;
+  width: 20px;
+  height: 100%;
+  stroke: #668fa1;
 }
 
-
 .simbolos {
-    margin: 0 auto 0px auto;
-    border-radius: 8px;  
-    max-width: 400px;  
-    
+  margin: 0 auto 0px auto;
+  border-radius: 8px;
+  max-width: 400px;
 }
 
 .simbolos h3 {
-    font-family: 'Poppins', sans-serif;  
-    font-size: 15px;
-    color: black;  
-    text-align: center; 
-    margin: 0;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  color: black;
+  text-align: center;
+  margin: 0;
 }
 
 .simbolos p {
-    font-family: 'Courier New', monospace;  
-    font-size: 1rem; 
-    color: #313030;  
-    background-color: #fff;  
-    padding: 10px;  
-    border: 1px solid #ccc;  
-    border-radius: 5px;  
-    text-align: center;  
+  font-family: "Courier New", monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #313030;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
 }
 
 /* Estilos para el contenedor principal */
 .container-graph-table {
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-    gap: 20px;
-    margin-bottom: 20px;
-    padding: 15px;
-    max-width: 900px;  /* Ancho máximo reducido para hacer los contenedores más pequeños */
-    margin-left: auto;
-    margin-right: auto;  /* Centramos el contenedor */
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  max-width: 90%; /* Ancho máximo reducido para hacer los contenedores más pequeños */
+  margin-left: auto;
+  margin-right: auto; /* Centramos el contenedor */
 }
 
 /* El grafo ocupa menos espacio */
 .graph-container {
-    flex: 1;
-    background-color: white;
-    padding: 15px;
-    border-radius: 10px;
-    max-width: 500px;  /* Ancho máximo para la sección del grafo */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  max-width: 800px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 #cadena {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transición suave */
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Transición suave */
 }
 
 #cadena::placeholder {
-    color: #6c757d; /* Placeholder de color suave */
+  color: #6c757d; /* Placeholder de color suave */
 }
 
 .container-cadena {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100%; 
-    padding: 10px;
-    max-width: 900px;  /* Ancho máximo reducido para hacer los contenedores más pequeños */
-    margin-left: auto;
-    margin-right: auto;  /* Centramos el contenedor */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  max-width: 900px; /* Ancho máximo reducido para hacer los contenedores más pequeños */
+  margin-left: auto;
+  margin-right: auto; /* Centramos el contenedor */
 }
 
 .container-cadena input[type="text"] {
-    font-family: 'Poppins','sans-serif';
-    font-size: 12px;
-    width: 100%; /* Que ocupe todo el ancho disponible dentro del contenedor */
-    max-width: 500px; /* Ancho máximo del input */
-    margin-right: 10px; /* Margen inferior para separar del botón */
+  font-family: "Poppins", "sans-serif";
+  font-size: 12px;
+  width: 100%; /* Que ocupe todo el ancho disponible dentro del contenedor */
+  max-width: 500px; /* Ancho máximo del input */
+  margin-right: 10px; /* Margen inferior para separar del botón */
+}
+#submitButton,
+#resetButton {
+  padding: 8px 15px;
+  background-color: #2a7a97;
+  font-family: "Poppins", "sans-serif";
+  color: white;
+  border: none;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#submitButton {
+  margin-right: 5px;
 }
 
-.container-cadena button {
-    padding: 8px 15px;
-    background-color: #2a7a97;
-    font-family: 'Poppins','sans-serif';
-    color: white;
-    border: none;
-    font-size: 12px ;
-    border-radius: 6px;
-    cursor: pointer;
+.text-next-button{
+    font-size: 10px;
+    color: rgb(186, 186, 186);
+    font-style: italic;
+    margin: 3px;
 }
-
 .container-cadena button:hover {
-    background-color: #86a6b2;
+  background-color: #86a6b2;
 }
-
 
 /* Estilo del contenedor de la tabla */
 .table-container {
-    flex: 1;
-    padding: 15px;
-    border-radius: 10px;
-    background-color: rgb(255, 255, 255);
-    max-width: 500px;  /* Ancho máximo para la sección de la tabla */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: rgb(255, 255, 255);
+  max-width: 500px; /* Ancho máximo para la sección de la tabla */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
-
-
 
 /* Estilos para la tabla */
 .table-container table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1px solid black;
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid black;
 }
 
-.table-container th, .table-container td {
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #ddd;
+.table-container th,
+.table-container td {
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #ddd;
 }
 
 .table-container th {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }
 
 /* Estilos para el grafo del AFD no óptimo y óptimo */
-#network-afdnop, #network-afdopt, #network-thompson{
-    width: 100%;
-    height: 500px;  
-    background-color: #e7eced;
-    border-radius: 10px;
+#network-afdnop,
+#network-afdopt,
+#network-thompson {
+  width: 100%;
+  height: 500px;
+  background-color: #e7eced;
+  border-radius: 10px;
 }
-
 
 #afdopt-table table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
-
 
 .hidden {
-    display: none;
-}
-/* Estilo para el contenedor del recorrido */
-.recorrido-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
+  display: none;
 }
 
-.recorrido-title {
-    font-size: 1.5em;
-    color: #333;
-    text-align: center;
+.smaller-swal-popup {
+  width: 400px !important; /* Tamaño más pequeño */
+  font-size: 13px; /* Fuente general más pequeña */
 }
 
-.transicion {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    background-color: #f4f4f4;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease-in-out;
+.start-traversal {
+  background-color: #2a7a97;
+  color: white;
+  font-size: 12px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-family: "Poppins", "sans-serif";
+  margin-top: 5px;
+  cursor: pointer;
 }
 
-.transicion:hover {
-    background-color: #d1f5d3;
+.start-traversal:hover {
+  background-color: #86a6b2;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Aumentar la sombra al pasar el mouse */
 }
 
+/* Nodo con colores pastel, sombras suaves y tamaño compacto */
 .node {
-    font-weight: bold;
-    color: #333;
-    margin: 0 10px;
+  background-color: #acd5e8;
+  color: #333;
+  padding: 4px 8px;
+  border-radius: 8px;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease-in-out, transform 0.2s;
 }
 
-.chart {
-    font-size: 1.2em;
-    color: #007BFF;
-    margin: 0 10px;
+.node:hover {
+  background-color: #86a6b2;
+  transform: scale(1.05);
+  cursor: pointer;
 }
 
-/* Estilo para el resultado */
-.resultado {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-    animation: fadeIn 0.5s ease-in-out;
+/* Flechas elegantes y compactas */
+.arrow {
+  color: #666;
+  font-style: italic;
+  font-size: 14px;
+  padding: 0 3px;
+  display: inline-block;
 }
 
-.resultado-valido {
-    background-color: #d4edda;
-    color: #155724;
-    border: 2px solid #c3e6cb;
+.transition-container {
+  margin-top: 10px;
+  margin-right: 35px;
+}
+.recorrido-container {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
 }
 
-.resultado-invalido {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 2px solid #f5c6cb;
+/* Estilos para el cuadro de texto */
+input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 2px solid #ccc;
+  font-size: 16px;
+  outline: none;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.valido, .invalido {
-    font-size: 1.5em;
-    margin-bottom: 10px;
+/* Cuadro de texto válido (verde) */
+.valid-input {
+  background-color: #e3f8e3;
+  border-color: #77dd77;
 }
 
-/* Animación */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Cuadro de texto no válido (rojo) */
+.invalid-input {
+  background-color: #ffe2e2;
+  border-color: #ff6961;
+}
+
+/* Estilo para el contenedor del resultado */
+.result-text {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* Estilo para resultado aceptado (verde) */
+.accepted {
+  color: #34b534; /* Verde suave */
+  background-color: #e3f8e3; /* Fondo verde claro */
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+/* Estilo para resultado rechazado (rojo) */
+.rejected {
+  color: #f54e45; /* Rojo suave */
+  background-color: #ffe2e2; /* Fondo rojo claro */
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+/* Transiciones suaves para cambios */
+.result-text span {
+  display: inline-block;
+  transition: all 0.3s ease-in-out;
 }
