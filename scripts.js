@@ -126,7 +126,7 @@ function construirMapeo(graph, map) {
   });
 }
 
-// Función para resaltar un nodo en el grafo y mantener el color original después de cierto tiempo
+// Función para resaltar un nodo en el grafo y restaurar su color después de cierto tiempo
 function highlightNode(graph, map, nodeId, duration) {
   const mappedId = map[nodeId.trim()];
   if (!mappedId) {
@@ -140,24 +140,26 @@ function highlightNode(graph, map, nodeId, duration) {
       id: mappedId,
       color: { background: "gray", border: "gray" },
     });
+
+    // Restaurar el color original después de `duration` milisegundos
     setTimeout(() => {
       graph.body.data.nodes.update({ id: mappedId, color: originalColor });
     }, duration);
   }
 }
 
-// Función para resaltar una arista en el grafo y mantener el color original después de cierto tiempo
+// Función para resaltar una arista en el grafo y restaurar su color después de cierto tiempo
 function highlightEdge(graph, map, fromId, toId, duration) {
   const mappedFromId = map[fromId.trim()];
   const mappedToId = map[toId.trim()];
   const edges = graph.body.data.edges.get();
-  const edge = edges.find(
-    (e) => e.from === mappedFromId && e.to === mappedToId
-  );
+  const edge = edges.find((e) => e.from === mappedFromId && e.to === mappedToId);
 
   if (edge) {
-    const originalColor = edge.color || { color: "#5DADE2" };
+    const originalColor = edge.color || { color: "#5DADE2" }; // Color de la arista
     graph.body.data.edges.update({ id: edge.id, color: { color: "gray" } });
+
+    // Restaurar el color original después de `duration` milisegundos
     setTimeout(() => {
       graph.body.data.edges.update({ id: edge.id, color: originalColor });
     }, duration);
@@ -212,6 +214,8 @@ function automaticTraversalOpt() {
   }
 }
 
+
+
 // Función para iniciar el recorrido automático en AFD No Óptimo
 function startTraversalNop() {
   clearInterval(traversalIntervalNop);
@@ -225,6 +229,7 @@ function startTraversalOpt() {
   currentIndexOpt = 0;
   traversalIntervalOpt = setInterval(automaticTraversalOpt, 3000);
 }
+
 
 // Asociar el botón "Start Traversal" al AFD No Óptimo
 document
